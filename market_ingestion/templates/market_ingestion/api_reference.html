@@ -8,7 +8,7 @@
 <style>
   .api-doc-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 1rem;
     margin-bottom: 1.25rem;
   }
@@ -74,7 +74,7 @@
 
   .api-doc-table {
     width: 100%;
-    min-width: 900px;
+    min-width: 980px;
     border-collapse: separate;
     border-spacing: 0;
   }
@@ -163,7 +163,24 @@
     margin-top: 0.35rem;
   }
 
-  @media (max-width: 960px) {
+  .api-doc-note {
+    margin: 0 0 1rem 0;
+    padding: 0.95rem 1rem;
+    border: 1px solid rgba(79, 70, 229, 0.16);
+    border-radius: 14px;
+    background: #eef2ff;
+    color: #3730a3;
+    font-size: 0.92rem;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 1100px) {
+    .api-doc-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 680px) {
     .api-doc-grid {
       grid-template-columns: 1fr;
     }
@@ -185,12 +202,21 @@
     <p class="api-doc-stat-label">Market Bars</p>
     <p class="api-doc-stat-value">{{ bars_count }}</p>
   </div>
+
+  <div class="api-doc-stat">
+    <p class="api-doc-stat-label">Journal Entries</p>
+    <p class="api-doc-stat-value">{{ journal_count }}</p>
+  </div>
 </section>
 
 <section class="api-doc-panel">
   <p class="api-doc-kicker">Overview</p>
-  <h2 class="api-doc-title">Available Endpoints</h2>
-  <p class="api-doc-subtitle">These endpoints provide read-only access to operational data already stored in the DataBridge platform.</p>
+  <h2 class="api-doc-title">Read-only operational API</h2>
+  <p class="api-doc-subtitle">These endpoints expose data already stored in the DataBridge platform database. They do not trigger live provider fetches and do not allow writes.</p>
+
+  <div class="api-doc-note">
+    This API is intended for operational inspection, portfolio review, and lightweight integration testing. List endpoints are paginated, detail endpoints return a single record, and example detail IDs shown below are illustrative only.
+  </div>
 
   <div class="api-doc-table-wrap">
     <table class="api-doc-table">
@@ -207,19 +233,49 @@
           <td>Ingestion Runs</td>
           <td><span class="api-doc-code">{% url 'api_ops:runs' %}</span></td>
           <td><span class="api-doc-code">{% url 'api_ops:run_detail' 1 %}</span></td>
-          <td><span class="api-doc-code">source</span>, <span class="api-doc-code">symbol</span>, <span class="api-doc-code">timeframe</span>, <span class="api-doc-code">status</span>, <span class="api-doc-code">page</span>, <span class="api-doc-code">page_size</span></td>
+          <td>
+            <span class="api-doc-code">source</span>,
+            <span class="api-doc-code">symbol</span>,
+            <span class="api-doc-code">timeframe</span>,
+            <span class="api-doc-code">status</span>,
+            <span class="api-doc-code">page</span>,
+            <span class="api-doc-code">page_size</span>
+          </td>
         </tr>
         <tr>
           <td>Metric Snapshots</td>
           <td><span class="api-doc-code">{% url 'api_ops:snapshots' %}</span></td>
           <td><span class="api-doc-code">{% url 'api_ops:snapshot_detail' 1 %}</span></td>
-          <td><span class="api-doc-code">source</span>, <span class="api-doc-code">symbol</span>, <span class="api-doc-code">timeframe</span>, <span class="api-doc-code">page</span>, <span class="api-doc-code">page_size</span></td>
+          <td>
+            <span class="api-doc-code">source</span>,
+            <span class="api-doc-code">symbol</span>,
+            <span class="api-doc-code">timeframe</span>,
+            <span class="api-doc-code">page</span>,
+            <span class="api-doc-code">page_size</span>
+          </td>
         </tr>
         <tr>
           <td>Market Bars</td>
           <td><span class="api-doc-code">{% url 'api_ops:bars' %}</span></td>
           <td><span class="api-doc-code">{% url 'api_ops:bar_detail' 1 %}</span></td>
-          <td><span class="api-doc-code">source</span>, <span class="api-doc-code">symbol</span>, <span class="api-doc-code">timeframe</span>, <span class="api-doc-code">page</span>, <span class="api-doc-code">page_size</span></td>
+          <td>
+            <span class="api-doc-code">source</span>,
+            <span class="api-doc-code">symbol</span>,
+            <span class="api-doc-code">timeframe</span>,
+            <span class="api-doc-code">page</span>,
+            <span class="api-doc-code">page_size</span>
+          </td>
+        </tr>
+        <tr>
+          <td>Trade Journal Entries</td>
+          <td><span class="api-doc-code">{% url 'api_ops:journal' %}</span></td>
+          <td><span class="api-doc-code">{% url 'api_ops:journal_detail' 1 %}</span></td>
+          <td>
+            <span class="api-doc-code">symbol</span>,
+            <span class="api-doc-code">source_file</span>,
+            <span class="api-doc-code">page</span>,
+            <span class="api-doc-code">page_size</span>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -229,21 +285,23 @@
     <a href="{% url 'api_ops:runs' %}" class="api-doc-pill">Runs API</a>
     <a href="{% url 'api_ops:snapshots' %}" class="api-doc-pill">Snapshots API</a>
     <a href="{% url 'api_ops:bars' %}" class="api-doc-pill">Bars API</a>
+    <a href="{% url 'api_ops:journal' %}" class="api-doc-pill">Journal API</a>
   </div>
 </section>
 
 <section class="api-doc-panel">
   <p class="api-doc-kicker">Query Parameters</p>
   <h2 class="api-doc-title">Supported Filters</h2>
-  <p class="api-doc-subtitle">Use query parameters to narrow the list endpoints.</p>
+  <p class="api-doc-subtitle">Use query parameters to narrow list endpoints. Page size is capped in the backend.</p>
 
   <ul class="api-doc-list">
     <li><span class="api-doc-code">source</span> — provider name, such as <span class="api-doc-code">yfinance</span></li>
     <li><span class="api-doc-code">symbol</span> — instrument symbol, such as <span class="api-doc-code">BTC-USD</span></li>
     <li><span class="api-doc-code">timeframe</span> — interval value, such as <span class="api-doc-code">1h</span></li>
-    <li><span class="api-doc-code">status</span> — available only on ingestion runs, such as <span class="api-doc-code">success</span></li>
+    <li><span class="api-doc-code">status</span> — available on ingestion runs, such as <span class="api-doc-code">success</span></li>
+    <li><span class="api-doc-code">source_file</span> — available on journal entries, such as <span class="api-doc-code">trading-journal.csv</span></li>
     <li><span class="api-doc-code">page</span> — page number for paginated results</li>
-    <li><span class="api-doc-code">page_size</span> — page size, capped in the backend</li>
+    <li><span class="api-doc-code">page_size</span> — requested page size, capped in the backend</li>
   </ul>
 
   <div class="api-doc-pill-row">
@@ -251,7 +309,8 @@
     <a href="{% url 'api_ops:runs' %}?source=yfinance" class="api-doc-pill">Runs: source=yfinance</a>
     <a href="{% url 'api_ops:snapshots' %}?symbol=BTC-USD" class="api-doc-pill">Snapshots: symbol=BTC-USD</a>
     <a href="{% url 'api_ops:bars' %}?source=yfinance&symbol=BTC-USD&timeframe=1h" class="api-doc-pill">Bars: yfinance + BTC-USD + 1h</a>
-    <a href="{% url 'api_ops:bars' %}?page=1&page_size=25" class="api-doc-pill">Bars: page=1&page_size=25</a>
+    <a href="{% url 'api_ops:journal' %}?symbol=BTC-USD" class="api-doc-pill">Journal: symbol=BTC-USD</a>
+    <a href="{% url 'api_ops:journal' %}?source_file=trading-journal.csv" class="api-doc-pill">Journal: source_file</a>
   </div>
 </section>
 
@@ -272,7 +331,12 @@
 {% url 'api_ops:bars' %}
 {% url 'api_ops:bars' %}?source=yfinance
 {% url 'api_ops:bars' %}?symbol=BTC-USD&timeframe=1h
-{% url 'api_ops:bar_detail' 1 %}</pre>
+{% url 'api_ops:bar_detail' 1 %}
+
+{% url 'api_ops:journal' %}
+{% url 'api_ops:journal' %}?symbol=BTC-USD
+{% url 'api_ops:journal' %}?source_file=trading-journal.csv
+{% url 'api_ops:journal_detail' 1 %}</pre>
 </section>
 
 <section class="api-doc-panel">
@@ -281,40 +345,56 @@
   <p class="api-doc-subtitle">List endpoints return paginated results; detail endpoints return a single record.</p>
 
 <pre class="api-doc-pre">{
-  "endpoint": "ingestion_runs",
+  "endpoint": "trade_journal_entries",
   "meta": {
     "page": 1,
     "page_size": 25,
     "total_pages": 1,
-    "total_results": 13,
+    "total_results": 10,
     "has_next": false,
     "has_previous": false,
     "filters": {
-      "source": "",
       "symbol": "",
-      "timeframe": "",
-      "status": ""
+      "source_file": ""
     }
   },
   "results": [
     {
-      "id": 13,
-      "source": "yfinance",
+      "id": 1,
       "symbol": "BTC-USD",
-      "timeframe": "1h",
-      "status": "success"
+      "side": "buy",
+      "opened_at": "2026-03-08T09:00:00Z",
+      "closed_at": "2026-03-08T11:00:00Z",
+      "open_price": "62000.00000000",
+      "close_price": "62450.00000000",
+      "size": "0.10000000",
+      "pnl": "45.00000000",
+      "source_file": "trading-journal.csv",
+      "row_number": 1,
+      "ingestion_run_id": 4,
+      "created_at": "2026-03-08T11:05:00Z"
     }
   ]
 }
 
 {
-  "endpoint": "ingestion_run_detail",
+  "endpoint": "trade_journal_entry_detail",
   "result": {
-    "id": 13,
-    "source": "yfinance",
+    "id": 1,
     "symbol": "BTC-USD",
-    "timeframe": "1h",
-    "status": "success"
+    "side": "buy",
+    "opened_at": "2026-03-08T09:00:00Z",
+    "closed_at": "2026-03-08T11:00:00Z",
+    "open_price": "62000.00000000",
+    "close_price": "62450.00000000",
+    "size": "0.10000000",
+    "pnl": "45.00000000",
+    "source_file": "trading-journal.csv",
+    "row_number": 1,
+    "notes": "",
+    "raw_row": {},
+    "ingestion_run_id": 4,
+    "created_at": "2026-03-08T11:05:00Z"
   }
 }</pre>
 </section>

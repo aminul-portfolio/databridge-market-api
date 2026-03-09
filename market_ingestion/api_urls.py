@@ -8,6 +8,8 @@ from market_ingestion.api_views import (
     market_bar_detail_api,
     metric_snapshot_api,
     metric_snapshot_detail_api,
+    trade_journal_entry_api,
+    trade_journal_entry_detail_api,
 )
 
 app_name = "api_ops"
@@ -20,4 +22,6 @@ urlpatterns = [
     path("snapshots/<int:pk>/", metric_snapshot_detail_api, name="snapshot_detail"),
     path("bars/", market_bar_api, name="bars"),
     path("bars/<int:pk>/", market_bar_detail_api, name="bar_detail"),
+    path("journal/", trade_journal_entry_api, name="journal"),
+    path("journal/<int:pk>/", trade_journal_entry_detail_api, name="journal_detail"),
 ]

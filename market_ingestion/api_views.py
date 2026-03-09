@@ -3,7 +3,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 
-from market_ingestion.models import IngestionRun, MarketBar, MetricSnapshot
+from market_ingestion.models import IngestionRun, MarketBar, MetricSnapshot, TradeJournalEntry
 
 def _get_int(value, default, minimum=1, maximum=200):
     try:
@@ -30,6 +30,7 @@ def api_reference_view(request):
         "runs_count": IngestionRun.objects.count(),
         "snapshots_count": MetricSnapshot.objects.count(),
         "bars_count": MarketBar.objects.count(),
+        "journal_count": TradeJournalEntry.objects.count(),
     }
     return render(request, "market_ingestion/api_reference.html", context)
 
@@ -283,6 +284,84 @@ def market_bar_detail_api(request, pk):
             "ingestion_run_id": obj.ingestion_run_id,
             "created_at": obj.created_at,
             "updated_at": obj.updated_at,
+        },
+    }
+    return JsonResponse(payload, encoder=DjangoJSONEncoder)
+def trade_journal_entry_api(request):
+    queryset = TradeJournalEntry.objects.all()
+
+    symbol = request.GET.get("symbol", "").strip()
+    source_file = request.GET.get("source_file", "").strip()
+
+    if symbol:
+        queryset = queryset.filter(symbol=symbol)
+    if source_file:
+        queryset = queryset.filter(source_file=source_file)
+
+    queryset = queryset.order_by("-opened_at", "-id")
+
+    page = _get_int(request.GET.get("page"), default=1)
+    page_size = _get_int(request.GET.get("page_size"), default=25, maximum=100)
+
+    paginator = Paginator(queryset, page_size)
+    page_obj = paginator.get_page(page)
+
+    results = []
+    for obj in page_obj.object_list:
+        results.append(
+            {
+                "id": obj.id,
+                "symbol": obj.symbol,
+                "side": obj.side,
+                "opened_at": obj.opened_at,
+                "closed_at": obj.closed_at,
+                "open_price": obj.open_price,
+                "close_price": obj.close_price,
+                "size": obj.size,
+                "pnl": obj.pnl,
+                "source_file": obj.source_file,
+                "row_number": obj.row_number,
+                "ingestion_run_id": obj.ingestion_run_id,
+                "created_at": obj.created_at,
+            }
+        )
+
+    payload = {
+        "endpoint": "trade_journal_entries",
+        "meta": _build_meta(
+            page_obj,
+            page_size,
+            {
+                "symbol": symbol,
+                "source_file": source_file,
+            },
+        ),
+        "results": results,
+    }
+    return JsonResponse(payload, encoder=DjangoJSONEncoder)
+
+
+def trade_journal_entry_detail_api(request, pk):
+    obj = get_object_or_404(TradeJournalEntry, pk=pk)
+
+    payload = {
+        "endpoint": "trade_journal_entry_detail",
+        "result": {
+            "id": obj.id,
+            "symbol": obj.symbol,
+            "side": obj.side,
+            "opened_at": obj.opened_at,
+            "closed_at": obj.closed_at,
+            "open_price": obj.open_price,
+            "close_price": obj.close_price,
+            "size": obj.size,
+            "pnl": obj.pnl,
+            "source_file": obj.source_file,
+            "row_number": obj.row_number,
+            "notes": obj.notes,
+            "raw_row": obj.raw_row,
+            "ingestion_run_id": obj.ingestion_run_id,
+            "created_at": obj.created_at,
         },
     }
     return JsonResponse(payload, encoder=DjangoJSONEncoder)
