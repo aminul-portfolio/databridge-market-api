@@ -1,0 +1,479 @@
+import base64
+import json
+from io import BytesIO
+from pathlib import Path
+
+import ccxt
+import ccxt.async_support as ccxt_async
+import matplotlib.pyplot as plt
+import pandas as pd
+import requests
+import yfinance as yf
+from django.conf import settings
+from django.http import JsonResponse
+from django.shortcuts import render
+from django.utils import timezone
+
+from .models import OHLCV, TradeLog
+
+
+APP_DIR = Path(__file__).resolve().parent
+TRADING_JOURNAL_CSV = APP_DIR / "static" / "trading-journal.csv"
+
+
+def _to_pretty_json(data):
+    return json.dumps(data, indent=2, default=str)
+
+
+def _normalize_dataframe_for_template(df: pd.DataFrame) -> pd.DataFrame:
+    if df.empty:
+        return df
+
+    df = df.copy()
+
+    for col in df.columns:
+        if pd.api.types.is_datetime64_any_dtype(df[col]) or pd.api.types.is_datetime64tz_dtype(df[col]):
+            df[col] = df[col].astype(str)
+
+    return df
+
+
+def _fetch_btc_yfinance_history(limit: int = 50) -> pd.DataFrame:
+    ticker = yf.Ticker("BTC-USD")
+    hist = ticker.history(period="7d", interval="1h").reset_index()
+    hist = _normalize_dataframe_for_template(hist)
+    return hist.tail(limit)
+
+
+def _fetch_btc_ccxt_ticker() -> dict:
+    exchange = ccxt.binance({"enableRateLimit": True})
+    try:
+        return exchange.fetch_ticker("BTC/USDT")
+    finally:
+        close_method = getattr(exchange, "close", None)
+        if callable(close_method):
+            close_method()
+
+
+def _fetch_eurusd_twelvedata(outputsize: int = 50) -> dict:
+    if not settings.TWELVEDATA_API_KEY:
+        return {
+            "status": "error",
+            "message": "TWELVEDATA_API_KEY is not configured.",
+        }
+
+    url = "https://api.twelvedata.com/time_series"
+    params = {
+        "symbol": "EUR/USD",
+        "interval": "1h",
+        "outputsize": outputsize,
+        "apikey": settings.TWELVEDATA_API_KEY,
+    }
+
+    try:
+        response = requests.get(url, params=params, timeout=20)
+        response.raise_for_status()
+        data = response.json()
+
+        if data.get("status") == "error":
+            if data.get("code") == 401:
+                return {
+                    "status": "error",
+                    "message": "TwelveData authentication failed. The API key is invalid, inactive, or not accepted by TwelveData.",
+                }
+            return {
+                "status": "error",
+                "message": data.get("message", "TwelveData returned an error."),
+            }
+
+        return data
+
+    except requests.RequestException as exc:
+        return {
+            "status": "error",
+            "message": f"Failed to fetch TwelveData: {exc}",
+        }
+
+
+def _twelvedata_to_records(data_td: dict) -> list[dict]:
+    if "values" not in data_td:
+        return [{"error": data_td.get("message", "Error fetching data")}]
+
+    df_td = pd.json_normalize(data_td["values"])
+
+    if "datetime" in df_td.columns:
+        df_td["datetime"] = pd.to_datetime(df_td["datetime"], errors="coerce")
+
+    numeric_cols = [col for col in ["open", "high", "low", "close", "volume"] if col in df_td.columns]
+    if numeric_cols:
+        df_td[numeric_cols] = df_td[numeric_cols].apply(pd.to_numeric, errors="coerce")
+
+    df_td = _normalize_dataframe_for_template(df_td)
+    return df_td.to_dict(orient="records")
+
+
+# Home dashboard view
+def home(request):
+    try:
+        btc_yfinance_data = _fetch_btc_yfinance_history(limit=5).to_dict(orient="records")
+    except Exception as exc:
+        btc_yfinance_data = [{"error": f"Failed to fetch BTC yfinance data: {exc}"}]
+
+    try:
+        btc_ccxt_ticker = _fetch_btc_ccxt_ticker()
+        btc_ccxt_data = [btc_ccxt_ticker]
+        btc_ccxt_json_str = _to_pretty_json(btc_ccxt_ticker)
+    except Exception as exc:
+        btc_ccxt_data = [{"error": f"Failed to fetch BTC ccxt data: {exc}"}]
+        btc_ccxt_json_str = _to_pretty_json(btc_ccxt_data[0])
+
+    data_td = _fetch_eurusd_twelvedata(outputsize=5)
+    eurusd_data = _twelvedata_to_records(data_td)
+
+    return render(
+        request,
+        "home.html",
+        {
+            "btc_yfinance_data": btc_yfinance_data,
+            "btc_ccxt_data": btc_ccxt_data,
+            "btc_ccxt_json": btc_ccxt_json_str,
+            "eurusd_data": eurusd_data,
+        },
+    )
+
+
+# Save an example OHLCV row manually
+def save_ohlcv_sample(request):
+    OHLCV.objects.create(
+        symbol="BTC/USDT",
+        timestamp=timezone.now(),
+        open=30000,
+        high=31000,
+        low=29500,
+        close=30500,
+        volume=123.45,
+    )
+    return JsonResponse({"status": "OHLCV sample saved"})
+
+
+# Save an example TradeLog row manually
+def save_trade(request):
+    TradeLog.objects.create(
+        symbol="BTC/USD",
+        open_time=timezone.now(),
+        open_price=20000,
+        volume=0.5,
+    )
+    return JsonResponse({"status": "TradeLog saved"})
+
+
+# BTC yfinance JSON
+def btc_yfinance(request):
+    try:
+        data = _fetch_btc_yfinance_history(limit=50).to_dict(orient="records")
+        pretty_json = _to_pretty_json(data)
+    except Exception as exc:
+        pretty_json = _to_pretty_json({"error": f"Failed to fetch BTC yfinance data: {exc}"})
+
+    return render(
+        request,
+        "json_view.html",
+        {
+            "title": "BTC/USD yfinance JSON",
+            "json_data": pretty_json,
+        },
+    )
+
+
+# BTC yfinance table
+def btc_yfinance_page(request):
+    try:
+        data = _fetch_btc_yfinance_history(limit=50).to_dict(orient="records")
+    except Exception as exc:
+        data = [{"error": f"Failed to fetch BTC yfinance data: {exc}"}]
+
+    return render(
+        request,
+        "table.html",
+        {
+            "title": "BTC/USD yfinance Table",
+            "data": data,
+        },
+    )
+
+
+# BTC ccxt JSON
+def btc_ccxt(request):
+    try:
+        ticker = _fetch_btc_ccxt_ticker()
+        pretty_json = _to_pretty_json(ticker)
+    except Exception as exc:
+        pretty_json = _to_pretty_json({"error": f"Failed to fetch BTC ccxt data: {exc}"})
+
+    return render(
+        request,
+        "json_view.html",
+        {
+            "title": "BTC/USDT ccxt JSON",
+            "json_data": pretty_json,
+        },
+    )
+
+
+# BTC ccxt table
+def btc_ccxt_page(request):
+    try:
+        ticker = _fetch_btc_ccxt_ticker()
+        data = [ticker]
+    except Exception as exc:
+        data = [{"error": f"Failed to fetch BTC ccxt data: {exc}"}]
+
+    return render(
+        request,
+        "table.html",
+        {
+            "title": "BTC/USDT ccxt Table",
+            "data": data,
+        },
+    )
+
+
+# EUR/USD TwelveData table
+def eurusd_twelvedata_page(request):
+    data_td = _fetch_eurusd_twelvedata(outputsize=50)
+    eurusd_data = _twelvedata_to_records(data_td)
+
+    return render(
+        request,
+        "table.html",
+        {
+            "title": "EUR/USD TwelveData Table",
+            "data": eurusd_data,
+        },
+    )
+
+
+# EUR/USD TwelveData JSON
+def eurusd_twelvedata_json(request):
+    data_td = _fetch_eurusd_twelvedata(outputsize=50)
+
+    return render(
+        request,
+        "json_view.html",
+        {
+            "title": "EUR/USD TwelveData JSON",
+            "json_data": _to_pretty_json(data_td),
+        },
+    )
+
+
+# BTC yfinance info
+def btc_yfinance_info(request):
+    try:
+        ticker = yf.Ticker("BTC-USD")
+        info = ticker.info or {}
+        selected_info = {
+            "Market Cap": info.get("marketCap", "Unknown"),
+            "Sector": info.get("sector", "Unknown"),
+            "Currency": info.get("currency", "Unknown"),
+            "Quote Type": info.get("quoteType", "Unknown"),
+        }
+    except Exception as exc:
+        selected_info = {"error": f"Failed to fetch BTC market info: {exc}"}
+
+    return render(
+        request,
+        "info_view.html",
+        {
+            "title": "BTC/USD Market Info",
+            "info": selected_info,
+        },
+    )
+
+
+# BTC yfinance compare with trading journal
+def btc_yfinance_compare(request):
+    if not TRADING_JOURNAL_CSV.exists():
+        return render(
+            request,
+            "table.html",
+            {
+                "title": "Trade Log Comparison",
+                "data": [{"error": f"Trading journal not found: {TRADING_JOURNAL_CSV}"}],
+            },
+        )
+
+    try:
+        trades = pd.read_csv(TRADING_JOURNAL_CSV)
+        trades["Open_dt"] = pd.to_datetime(trades["Open"], errors="coerce")
+
+        hist = yf.Ticker("BTC-USD").history(period="7d", interval="1h").reset_index()
+        hist["Datetime"] = pd.to_datetime(hist["Datetime"], errors="coerce")
+
+        if trades["Open_dt"].dt.tz is None:
+            trades["Open_dt"] = trades["Open_dt"].dt.tz_localize("UTC")
+
+        merged = pd.merge_asof(
+            trades.sort_values("Open_dt"),
+            hist.sort_values("Datetime"),
+            left_on="Open_dt",
+            right_on="Datetime",
+            direction="nearest",
+        )
+
+        merged = _normalize_dataframe_for_template(merged)
+        data = merged.to_dict(orient="records")
+    except Exception as exc:
+        data = [{"error": f"Failed to compare trade log with BTC data: {exc}"}]
+
+    return render(
+        request,
+        "table.html",
+        {
+            "title": "Trade Log Comparison",
+            "data": data,
+        },
+    )
+
+
+# BTC yfinance Matplotlib chart
+def btc_yfinance_plot(request):
+    try:
+        ticker = yf.Ticker("BTC-USD")
+        hist = ticker.history(period="7d", interval="1h")
+
+        plt.figure(figsize=(10, 5))
+        plt.plot(hist.index, hist["Close"], marker="o", linestyle="-")
+        plt.title("BTC/USD Closing Prices")
+        plt.xlabel("Date")
+        plt.ylabel("Price (USD)")
+        plt.xticks(rotation=45)
+        plt.grid(True)
+        plt.tight_layout()
+
+        buf = BytesIO()
+        plt.savefig(buf, format="png")
+        plt.close()
+        buf.seek(0)
+        image_base64 = base64.b64encode(buf.read()).decode("utf-8")
+        buf.close()
+    except Exception as exc:
+        return render(
+            request,
+            "info_view.html",
+            {
+                "title": "BTC/USD Chart",
+                "info": {"error": f"Failed to generate BTC chart: {exc}"},
+            },
+        )
+
+    return render(
+        request,
+        "plot_view.html",
+        {
+            "title": "BTC/USD Chart",
+            "chart_base64": image_base64,
+        },
+    )
+
+
+# ETH OHLCV
+def eth_ohlcv(request):
+    try:
+        exchange = ccxt.binance({"enableRateLimit": True})
+        ohlcv = exchange.fetch_ohlcv("ETH/USDT", "1h", limit=50)
+        df = pd.DataFrame(ohlcv, columns=["timestamp", "open", "high", "low", "close", "volume"])
+        df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms", errors="coerce")
+        df = _normalize_dataframe_for_template(df)
+        data = df.to_dict(orient="records")
+    except Exception as exc:
+        data = [{"error": f"Failed to fetch ETH OHLCV data: {exc}"}]
+    finally:
+        close_method = locals().get("exchange", None)
+        if close_method is not None:
+            method = getattr(exchange, "close", None)
+            if callable(method):
+                method()
+
+    return render(
+        request,
+        "table.html",
+        {
+            "title": "ETH/USDT OHLCV",
+            "data": data,
+        },
+    )
+
+
+# ETH SMA backtest
+def eth_backtest(request):
+    try:
+        exchange = ccxt.binance({"enableRateLimit": True})
+        ohlcv = exchange.fetch_ohlcv("ETH/USDT", "1h", limit=200)
+        df = pd.DataFrame(ohlcv, columns=["timestamp", "open", "high", "low", "close", "volume"])
+        df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms", errors="coerce")
+        df["sma_fast"] = df["close"].rolling(5).mean()
+        df["sma_slow"] = df["close"].rolling(20).mean()
+        df["signal"] = (df["sma_fast"] > df["sma_slow"]).astype(int)
+        df = _normalize_dataframe_for_template(df)
+        data = df.tail(20).to_dict(orient="records")
+    except Exception as exc:
+        data = [{"error": f"Failed to run ETH SMA backtest: {exc}"}]
+    finally:
+        close_method = locals().get("exchange", None)
+        if close_method is not None:
+            method = getattr(exchange, "close", None)
+            if callable(method):
+                method()
+
+    return render(
+        request,
+        "table.html",
+        {
+            "title": "ETH SMA Backtest",
+            "data": data,
+        },
+    )
+
+
+# BTC volatility JSON
+def btc_volatility(request):
+    try:
+        tickers = yf.download(
+            tickers=["BTC-USD", "ETH-USD"],
+            period="6mo",
+            interval="1d",
+            group_by="ticker",
+            auto_adjust=True,
+        )
+        btc_close = tickers["BTC-USD"]["Close"]
+        returns = btc_close.pct_change()
+        volatility = returns.rolling(14).std() * (252 ** 0.5)
+
+        data = {
+            "dates": btc_close.index.strftime("%Y-%m-%d").tolist(),
+            "volatility": volatility.fillna(0).tolist(),
+        }
+        return JsonResponse(data)
+    except Exception as exc:
+        return JsonResponse(
+            {"error": f"Failed to calculate BTC volatility: {exc}"},
+            status=500,
+        )
+
+
+# Async ccxt ticker view
+async def ccxt_async_ticker(request):
+    symbol = request.GET.get("symbol", "BTC/USDT")
+    exchange = ccxt_async.binance({"enableRateLimit": True})
+
+    try:
+        ticker = await exchange.fetch_ticker(symbol)
+        return JsonResponse(ticker)
+    except Exception as exc:
+        return JsonResponse(
+            {"error": f"Failed to fetch async ticker for {symbol}: {exc}"},
+            status=500,
+        )
+    finally:
+        await exchange.close()

@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block title_heading %}{{ page_title }}{% endblock %}
+{% block subtitle %}Read-only operational API guide for DataBridge Market API.{% endblock %}
+
+{% block content %}
+<style>
+  .api-doc-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .api-doc-stat {
+    padding: 1rem 1.1rem;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  }
+
+  .api-doc-stat-label {
+    margin: 0 0 0.4rem 0;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #64748b;
+  }
+
+  .api-doc-stat-value {
+    margin: 0;
+    font-size: 1.9rem;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  .api-doc-panel {
+    padding: 1.1rem;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+    margin-bottom: 1.25rem;
+  }
+
+  .api-doc-kicker {
+    margin: 0 0 0.35rem 0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #6366f1;
+  }
+
+  .api-doc-title {
+    margin: 0;
+    font-size: 1.18rem;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  .api-doc-subtitle {
+    margin: 0.35rem 0 1rem 0;
+    font-size: 0.93rem;
+    color: #64748b;
+  }
+
+  .api-doc-table-wrap {
+    overflow-x: auto;
+  }
+
+  .api-doc-table {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .api-doc-table th {
+    padding: 0.9rem 1rem;
+    background: #0f172a;
+    color: #ffffff;
+    text-align: left;
+    font-size: 0.88rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .api-doc-table td {
+    padding: 0.95rem 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    vertical-align: top;
+    font-size: 0.92rem;
+    color: #0f172a;
+  }
+
+  .api-doc-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .api-doc-code {
+    display: inline-block;
+    padding: 0.22rem 0.45rem;
+    border-radius: 8px;
+    background: #f8fafc;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.88rem;
+    color: #0f172a;
+    word-break: break-all;
+  }
+
+  .api-doc-pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-top: 0.9rem;
+  }
+
+  .api-doc-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 0.7rem 0.95rem;
+    border-radius: 999px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: #ffffff;
+    color: #334155;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.18s ease;
+  }
+
+  .api-doc-pill:hover {
+    border-color: rgba(79, 70, 229, 0.2);
+    color: #4f46e5;
+    transform: translateY(-1px);
+  }
+
+  .api-doc-pre {
+    margin: 0;
+    padding: 1rem;
+    border-radius: 16px;
+    background: #0f172a;
+    color: #e2e8f0;
+    overflow-x: auto;
+    font-size: 0.86rem;
+    line-height: 1.5;
+  }
+
+  .api-doc-list {
+    margin: 0;
+    padding-left: 1.2rem;
+    color: #334155;
+  }
+
+  .api-doc-list li + li {
+    margin-top: 0.35rem;
+  }
+
+  @media (max-width: 960px) {
+    .api-doc-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<section class="api-doc-grid">
+  <div class="api-doc-stat">
+    <p class="api-doc-stat-label">Ingestion Runs</p>
+    <p class="api-doc-stat-value">{{ runs_count }}</p>
+  </div>
+
+  <div class="api-doc-stat">
+    <p class="api-doc-stat-label">Metric Snapshots</p>
+    <p class="api-doc-stat-value">{{ snapshots_count }}</p>
+  </div>
+
+  <div class="api-doc-stat">
+    <p class="api-doc-stat-label">Market Bars</p>
+    <p class="api-doc-stat-value">{{ bars_count }}</p>
+  </div>
+</section>
+
+<section class="api-doc-panel">
+  <p class="api-doc-kicker">Overview</p>
+  <h2 class="api-doc-title">Available Endpoints</h2>
+  <p class="api-doc-subtitle">These endpoints provide read-only access to operational data already stored in the DataBridge platform.</p>
+
+  <div class="api-doc-table-wrap">
+    <table class="api-doc-table">
+      <thead>
+        <tr>
+          <th>Dataset</th>
+          <th>List Endpoint</th>
+          <th>Detail Endpoint</th>
+          <th>Supported Filters</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Ingestion Runs</td>
+          <td><span class="api-doc-code">{% url 'api_ops:runs' %}</span></td>
+          <td><span class="api-doc-code">{% url 'api_ops:run_detail' 1 %}</span></td>
+          <td><span class="api-doc-code">source</span>, <span class="api-doc-code">symbol</span>, <span class="api-doc-code">timeframe</span>, <span class="api-doc-code">status</span>, <span class="api-doc-code">page</span>, <span class="api-doc-code">page_size</span></td>
+        </tr>
+        <tr>
+          <td>Metric Snapshots</td>
+          <td><span class="api-doc-code">{% url 'api_ops:snapshots' %}</span></td>
+          <td><span class="api-doc-code">{% url 'api_ops:snapshot_detail' 1 %}</span></td>
+          <td><span class="api-doc-code">source</span>, <span class="api-doc-code">symbol</span>, <span class="api-doc-code">timeframe</span>, <span class="api-doc-code">page</span>, <span class="api-doc-code">page_size</span></td>
+        </tr>
+        <tr>
+          <td>Market Bars</td>
+          <td><span class="api-doc-code">{% url 'api_ops:bars' %}</span></td>
+          <td><span class="api-doc-code">{% url 'api_ops:bar_detail' 1 %}</span></td>
+          <td><span class="api-doc-code">source</span>, <span class="api-doc-code">symbol</span>, <span class="api-doc-code">timeframe</span>, <span class="api-doc-code">page</span>, <span class="api-doc-code">page_size</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="api-doc-pill-row">
+    <a href="{% url 'api_ops:runs' %}" class="api-doc-pill">Runs API</a>
+    <a href="{% url 'api_ops:snapshots' %}" class="api-doc-pill">Snapshots API</a>
+    <a href="{% url 'api_ops:bars' %}" class="api-doc-pill">Bars API</a>
+  </div>
+</section>
+
+<section class="api-doc-panel">
+  <p class="api-doc-kicker">Query Parameters</p>
+  <h2 class="api-doc-title">Supported Filters</h2>
+  <p class="api-doc-subtitle">Use query parameters to narrow the list endpoints.</p>
+
+  <ul class="api-doc-list">
+    <li><span class="api-doc-code">source</span> — provider name, such as <span class="api-doc-code">yfinance</span></li>
+    <li><span class="api-doc-code">symbol</span> — instrument symbol, such as <span class="api-doc-code">BTC-USD</span></li>
+    <li><span class="api-doc-code">timeframe</span> — interval value, such as <span class="api-doc-code">1h</span></li>
+    <li><span class="api-doc-code">status</span> — available only on ingestion runs, such as <span class="api-doc-code">success</span></li>
+    <li><span class="api-doc-code">page</span> — page number for paginated results</li>
+    <li><span class="api-doc-code">page_size</span> — page size, capped in the backend</li>
+  </ul>
+
+  <div class="api-doc-pill-row">
+    <a href="{% url 'api_ops:runs' %}?status=success" class="api-doc-pill">Runs: status=success</a>
+    <a href="{% url 'api_ops:runs' %}?source=yfinance" class="api-doc-pill">Runs: source=yfinance</a>
+    <a href="{% url 'api_ops:snapshots' %}?symbol=BTC-USD" class="api-doc-pill">Snapshots: symbol=BTC-USD</a>
+    <a href="{% url 'api_ops:bars' %}?source=yfinance&symbol=BTC-USD&timeframe=1h" class="api-doc-pill">Bars: yfinance + BTC-USD + 1h</a>
+    <a href="{% url 'api_ops:bars' %}?page=1&page_size=25" class="api-doc-pill">Bars: page=1&page_size=25</a>
+  </div>
+</section>
+
+<section class="api-doc-panel">
+  <p class="api-doc-kicker">Example URLs</p>
+  <h2 class="api-doc-title">Sample Requests</h2>
+  <p class="api-doc-subtitle">These examples show typical list and detail usage patterns.</p>
+
+<pre class="api-doc-pre">{% url 'api_ops:runs' %}
+{% url 'api_ops:runs' %}?status=success
+{% url 'api_ops:runs' %}?source=yfinance&timeframe=1h
+{% url 'api_ops:run_detail' 1 %}
+
+{% url 'api_ops:snapshots' %}
+{% url 'api_ops:snapshots' %}?symbol=BTC-USD
+{% url 'api_ops:snapshot_detail' 1 %}
+
+{% url 'api_ops:bars' %}
+{% url 'api_ops:bars' %}?source=yfinance
+{% url 'api_ops:bars' %}?symbol=BTC-USD&timeframe=1h
+{% url 'api_ops:bar_detail' 1 %}</pre>
+</section>
+
+<section class="api-doc-panel">
+  <p class="api-doc-kicker">Response Shapes</p>
+  <h2 class="api-doc-title">Example JSON Structure</h2>
+  <p class="api-doc-subtitle">List endpoints return paginated results; detail endpoints return a single record.</p>
+
+<pre class="api-doc-pre">{
+  "endpoint": "ingestion_runs",
+  "meta": {
+    "page": 1,
+    "page_size": 25,
+    "total_pages": 1,
+    "total_results": 13,
+    "has_next": false,
+    "has_previous": false,
+    "filters": {
+      "source": "",
+      "symbol": "",
+      "timeframe": "",
+      "status": ""
+    }
+  },
+  "results": [
+    {
+      "id": 13,
+      "source": "yfinance",
+      "symbol": "BTC-USD",
+      "timeframe": "1h",
+      "status": "success"
+    }
+  ]
+}
+
+{
+  "endpoint": "ingestion_run_detail",
+  "result": {
+    "id": 13,
+    "source": "yfinance",
+    "symbol": "BTC-USD",
+    "timeframe": "1h",
+    "status": "success"
+  }
+}</pre>
+</section>
+{% endblock %}

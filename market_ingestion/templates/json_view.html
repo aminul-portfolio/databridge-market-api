@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load custom_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block title_heading %}{{ title }}{% endblock %}
+{% block subtitle %}Inspect raw provider responses and structured output in JSON format.{% endblock %}
+
+{% block page_actions %}
+<button id="copyButton" class="btn btn-outline-secondary btn-sm">Copy JSON</button>
+<button id="downloadButton" class="btn btn-outline-primary btn-sm">Download JSON</button>
+<button id="refreshButton" class="btn btn-outline-success btn-sm">Refresh</button>
+{% endblock %}
+
+{% block content %}
+<div class="db-panel">
+  <pre id="jsonContent">{{ json_data|safe }}</pre>
+  <textarea id="jsonText" class="d-none">{{ json_data|safe }}</textarea>
+</div>
+
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+  <div id="copyToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body">
+        JSON copied to clipboard.
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const jsonText = document.getElementById("jsonText").value.trim();
+
+  document.getElementById("copyButton").addEventListener("click", function() {
+    navigator.clipboard.writeText(jsonText).then(function() {
+      const toast = new bootstrap.Toast(document.getElementById("copyToast"));
+      toast.show();
+    }).catch(function(err) {
+      alert("Failed to copy: " + err);
+    });
+  });
+
+  document.getElementById("downloadButton").addEventListener("click", function() {
+    const blob = new Blob([jsonText], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "data.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById("refreshButton").addEventListener("click", function() {
+    location.reload();
+  });
+
+  setTimeout(() => location.reload(), 60000);
+});
+</script>
+{% endblock %}

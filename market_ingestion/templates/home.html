@@ -1,0 +1,578 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block title_heading %}Market Dashboard{% endblock %}
+{% block subtitle %}Multi-source market data overview across yfinance, ccxt, and TwelveData.{% endblock %}
+
+{% block page_actions %}
+<a href="{{ STREAMLIT_URL }}" target="_blank" rel="noreferrer" class="btn btn-primary">Open Streamlit</a>
+{% endblock %}
+
+{% block content %}
+<style>
+  .dash-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .dash-stat-card {
+    padding: 1rem 1.1rem;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  }
+
+  .dash-stat-label {
+    margin: 0 0 0.45rem 0;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #64748b;
+  }
+
+  .dash-stat-value {
+    margin: 0;
+    font-size: 2rem;
+    line-height: 1;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  .dash-panel {
+    padding: 1.1rem;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+    margin-bottom: 1.25rem;
+  }
+
+  .dash-panel-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+
+  .dash-panel-kicker {
+    margin: 0 0 0.35rem 0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #6366f1;
+  }
+
+  .dash-panel-title {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  .dash-panel-subtitle {
+    margin: 0.35rem 0 0 0;
+    font-size: 0.93rem;
+    color: #64748b;
+  }
+
+  .dash-action-groups {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .dash-action-group {
+    padding: 1rem;
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    border-radius: 16px;
+    background: #f8fafc;
+  }
+
+  .dash-action-group-title {
+    margin: 0 0 0.25rem 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .dash-action-group-subtitle {
+    margin: 0 0 0.85rem 0;
+    font-size: 0.88rem;
+    color: #64748b;
+  }
+
+  .dash-action-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .dash-pill-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 0.7rem 0.95rem;
+    border-radius: 999px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: #ffffff;
+    color: #334155;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.18s ease;
+  }
+
+  .dash-pill-link:hover {
+    border-color: rgba(79, 70, 229, 0.22);
+    color: #4f46e5;
+    transform: translateY(-1px);
+  }
+
+  .dash-pill-link.is-primary {
+    background: #4f46e5;
+    border-color: #4f46e5;
+    color: #ffffff;
+    box-shadow: 0 8px 18px rgba(79, 70, 229, 0.18);
+  }
+
+  .dash-layout-grid {
+    display: grid;
+    grid-template-columns: 1.35fr 1fr;
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .dash-table-card {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 18px;
+    background: #ffffff;
+    overflow: hidden;
+  }
+
+  .dash-table-scroll {
+    overflow-x: auto;
+  }
+
+  .dash-data-table {
+    width: 100%;
+    min-width: 880px;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .dash-data-table thead th {
+    padding: 0.9rem 1rem;
+    background: #0f172a;
+    color: #ffffff;
+    font-size: 0.88rem;
+    font-weight: 700;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  .dash-data-table tbody td {
+    padding: 0.9rem 1rem;
+    font-size: 0.92rem;
+    color: #0f172a;
+    border-bottom: 1px solid #e5e7eb;
+    white-space: nowrap;
+    vertical-align: top;
+  }
+
+  .dash-data-table tbody tr:hover td {
+    background: #f8fafc;
+  }
+
+  .dash-data-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .dash-empty-row td {
+    padding: 2rem 1rem;
+    text-align: center;
+    white-space: normal;
+    background: #fbfdff;
+  }
+
+  .dash-empty-title {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .dash-empty-copy {
+    color: #64748b;
+    font-size: 0.92rem;
+  }
+
+  .dash-keyvalue {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .dash-kv-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 14px;
+    background: #f8fafc;
+  }
+
+  .dash-kv-label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #334155;
+  }
+
+  .dash-kv-value {
+    font-size: 0.92rem;
+    color: #0f172a;
+    text-align: right;
+    word-break: break-word;
+  }
+
+  .dash-pre-wrap {
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 14px;
+    background: #0f172a;
+    overflow-x: auto;
+  }
+
+  .dash-pre-wrap pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: #e2e8f0;
+    font-size: 0.84rem;
+  }
+
+  .dash-panel-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1rem;
+  }
+
+  .dash-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 36px;
+    padding: 0.5rem 0.8rem;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 999px;
+    background: #ffffff;
+    color: #475569;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .dash-chip strong {
+    color: #0f172a;
+  }
+
+  @media (max-width: 1100px) {
+    .dash-stat-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .dash-layout-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .dash-stat-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .dash-pill-link {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+
+<section class="dash-stat-grid">
+  <div class="dash-stat-card">
+    <p class="dash-stat-label">Data Sources</p>
+    <p class="dash-stat-value">3</p>
+  </div>
+
+  <div class="dash-stat-card">
+    <p class="dash-stat-label">BTC yfinance Rows</p>
+    <p class="dash-stat-value">{% if btc_yfinance_data %}{{ btc_yfinance_data|length }}{% else %}0{% endif %}</p>
+  </div>
+
+  <div class="dash-stat-card">
+    <p class="dash-stat-label">ccxt Snapshots</p>
+    <p class="dash-stat-value">{% if btc_ccxt_data %}{{ btc_ccxt_data|length }}{% else %}0{% endif %}</p>
+  </div>
+
+  <div class="dash-stat-card">
+    <p class="dash-stat-label">FX Rows</p>
+    <p class="dash-stat-value">{% if eurusd_data %}{{ eurusd_data|length }}{% else %}0{% endif %}</p>
+  </div>
+</section>
+
+<section class="dash-panel">
+  <div class="dash-panel-header">
+    <div>
+      <p class="dash-panel-kicker">Workspace Shortcuts</p>
+      <h2 class="dash-panel-title">Quick Access</h2>
+      <p class="dash-panel-subtitle">Jump into raw feeds, operational views, analytics pages, and external dashboard surfaces.</p>
+    </div>
+  </div>
+
+  <div class="dash-action-groups">
+    <div class="dash-action-group">
+      <h3 class="dash-action-group-title">Market Data Views</h3>
+      <p class="dash-action-group-subtitle">Inspect JSON endpoints, rendered tables, market info pages, and chart views.</p>
+
+      <div class="dash-action-row">
+        <a href="{% url 'btc_yfinance' %}" class="dash-pill-link">BTC JSON</a>
+        <a href="{% url 'btc_yfinance_page' %}" class="dash-pill-link">BTC Table</a>
+        <a href="{% url 'btc_yfinance_info' %}" class="dash-pill-link">Market Info</a>
+        <a href="{% url 'btc_yfinance_compare' %}" class="dash-pill-link">Journal Compare</a>
+        <a href="{% url 'btc_yfinance_plot' %}" class="dash-pill-link">BTC Chart</a>
+        <a href="{% url 'btc_ccxt' %}" class="dash-pill-link">ccxt JSON</a>
+        <a href="{% url 'btc_ccxt_page' %}" class="dash-pill-link">ccxt Table</a>
+        <a href="{% url 'eurusd_twelvedata_json' %}" class="dash-pill-link">EUR/USD JSON</a>
+        <a href="{% url 'eurusd_twelvedata_page' %}" class="dash-pill-link">EUR/USD Table</a>
+      </div>
+    </div>
+
+    <div class="dash-action-group">
+      <h3 class="dash-action-group-title">Operations & Monitoring</h3>
+      <p class="dash-action-group-subtitle">Review ETL runs, computed snapshots, normalized market bars, and external dashboard views.</p>
+
+      <div class="dash-action-row">
+        <a href="{% url 'ops:ingestion_runs' %}" class="dash-pill-link">Ingestion Runs</a>
+        <a href="{% url 'ops:metric_snapshots' %}" class="dash-pill-link">Metric Snapshots</a>
+        <a href="{% url 'ops:market_bars' %}" class="dash-pill-link">Market Bars</a>
+        <a href="{{ STREAMLIT_URL }}" target="_blank" rel="noreferrer" class="dash-pill-link is-primary">Streamlit Dashboard</a>
+      </div>
+    </div>
+      <div class="dash-action-group">
+          <h3 class="dash-action-group-title">API Access</h3>
+          <p class="dash-action-group-subtitle">Direct JSON endpoints plus ready-to-use filter examples for
+              integrations, testing, and inspection.</p>
+
+          <div class="dash-action-row" style="margin-bottom: 0.75rem;">
+              <a href="{% url 'api_ops:reference' %}" class="dash-pill-link">API Reference</a>
+              <a href="{% url 'api_ops:runs' %}" class="dash-pill-link">Runs API</a>
+              <a href="{% url 'api_ops:snapshots' %}" class="dash-pill-link">Snapshots API</a>
+              <a href="{% url 'api_ops:bars' %}" class="dash-pill-link">Bars API</a>
+          </div>
+
+          <div class="dash-action-row">
+              <a href="{% url 'api_ops:runs' %}?status=success" class="dash-pill-link">Runs: status=success</a>
+              <a href="{% url 'api_ops:runs' %}?source=yfinance" class="dash-pill-link">Runs: source=yfinance</a>
+              <a href="{% url 'api_ops:snapshots' %}?symbol=BTC-USD" class="dash-pill-link">Snapshots:
+                  symbol=BTC-USD</a>
+              <a href="{% url 'api_ops:bars' %}?source=yfinance" class="dash-pill-link">Bars: source=yfinance</a>
+              <a href="{% url 'api_ops:bars' %}?symbol=BTC-USD" class="dash-pill-link">Bars: symbol=BTC-USD</a>
+              <a href="{% url 'api_ops:bars' %}?timeframe=1h" class="dash-pill-link">Bars: timeframe=1h</a>
+          </div>
+      </div>
+  </div>
+</section>
+
+<section class="dash-layout-grid">
+  <article class="dash-panel">
+    <div class="dash-panel-header">
+      <div>
+        <p class="dash-panel-kicker">Source Preview</p>
+        <h2 class="dash-panel-title">BTC/USD yfinance — Last 5 Records</h2>
+        <p class="dash-panel-subtitle">Quick visibility into the latest sample rows currently rendered in the dashboard context.</p>
+      </div>
+
+      <div class="dash-chip">
+        Rows
+        <strong>{% if btc_yfinance_data %}{{ btc_yfinance_data|length }}{% else %}0{% endif %}</strong>
+      </div>
+    </div>
+
+    <div class="dash-table-card">
+      <div class="dash-table-scroll">
+        <table class="dash-data-table">
+          <thead>
+            <tr>
+              {% if btc_yfinance_data %}
+                {% for key in btc_yfinance_data.0.keys %}
+                  <th>{{ key }}</th>
+                {% endfor %}
+              {% else %}
+                <th>Data</th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in btc_yfinance_data %}
+              <tr>
+                {% for val in row.values %}
+                  <td>{{ val }}</td>
+                {% endfor %}
+              </tr>
+            {% empty %}
+              <tr class="dash-empty-row">
+                <td colspan="20">
+                  <span class="dash-empty-title">No BTC yfinance data available</span>
+                  <span class="dash-empty-copy">Refresh the data source or open the raw endpoint for further inspection.</span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="dash-panel-actions">
+      <a href="{% url 'btc_yfinance' %}" class="dash-pill-link">View JSON</a>
+      <a href="{% url 'btc_yfinance_page' %}" class="dash-pill-link">View Table</a>
+      <a href="{% url 'btc_yfinance_info' %}" class="dash-pill-link">Market Info</a>
+      <a href="{% url 'btc_yfinance_compare' %}" class="dash-pill-link">Compare to Journal</a>
+      <a href="{% url 'btc_yfinance_plot' %}" class="dash-pill-link">View Chart</a>
+    </div>
+  </article>
+
+  <article class="dash-panel">
+    <div class="dash-panel-header">
+      <div>
+        <p class="dash-panel-kicker">Live Snapshot</p>
+        <h2 class="dash-panel-title">BTC/USDT ccxt — Snapshot</h2>
+        <p class="dash-panel-subtitle">Current quote-style summary from the ccxt-backed source response.</p>
+      </div>
+
+      <div class="dash-chip">
+        Records
+        <strong>{% if btc_ccxt_data %}{{ btc_ccxt_data|length }}{% else %}0{% endif %}</strong>
+      </div>
+    </div>
+
+    <div class="dash-keyvalue">
+      <div class="dash-kv-row">
+        <span class="dash-kv-label">Symbol</span>
+        <span class="dash-kv-value">{% if btc_ccxt_data %}{{ btc_ccxt_data.0.symbol }}{% else %}-{% endif %}</span>
+      </div>
+      <div class="dash-kv-row">
+        <span class="dash-kv-label">Bid</span>
+        <span class="dash-kv-value">{% if btc_ccxt_data %}{{ btc_ccxt_data.0.bid }}{% else %}-{% endif %}</span>
+      </div>
+      <div class="dash-kv-row">
+        <span class="dash-kv-label">Ask</span>
+        <span class="dash-kv-value">{% if btc_ccxt_data %}{{ btc_ccxt_data.0.ask }}{% else %}-{% endif %}</span>
+      </div>
+      <div class="dash-kv-row">
+        <span class="dash-kv-label">Last Price</span>
+        <span class="dash-kv-value">{% if btc_ccxt_data %}{{ btc_ccxt_data.0.last }}{% else %}-{% endif %}</span>
+      </div>
+      <div class="dash-kv-row">
+        <span class="dash-kv-label">High</span>
+        <span class="dash-kv-value">{% if btc_ccxt_data %}{{ btc_ccxt_data.0.high }}{% else %}-{% endif %}</span>
+      </div>
+      <div class="dash-kv-row">
+        <span class="dash-kv-label">Low</span>
+        <span class="dash-kv-value">{% if btc_ccxt_data %}{{ btc_ccxt_data.0.low }}{% else %}-{% endif %}</span>
+      </div>
+      <div class="dash-kv-row">
+        <span class="dash-kv-label">Datetime</span>
+        <span class="dash-kv-value">{% if btc_ccxt_data %}{{ btc_ccxt_data.0.datetime }}{% else %}-{% endif %}</span>
+      </div>
+    </div>
+
+    <div class="dash-panel-actions">
+      <button class="dash-pill-link" type="button" data-bs-toggle="collapse" data-bs-target="#fullCcxtJson" aria-expanded="false" aria-controls="fullCcxtJson">
+        Show Full JSON
+      </button>
+      <a href="{% url 'btc_ccxt' %}" class="dash-pill-link">View JSON</a>
+      <a href="{% url 'btc_ccxt_page' %}" class="dash-pill-link">View Table</a>
+    </div>
+
+    <div class="collapse" id="fullCcxtJson">
+      <div class="dash-pre-wrap">
+        <pre>{{ btc_ccxt_json }}</pre>
+      </div>
+    </div>
+  </article>
+</section>
+
+<section class="dash-panel">
+  <div class="dash-panel-header">
+    <div>
+      <p class="dash-panel-kicker">FX Feed Preview</p>
+      <h2 class="dash-panel-title">EUR/USD TwelveData — Last 5 Records</h2>
+      <p class="dash-panel-subtitle">Recent FX rows from the TwelveData response surface used in the dashboard.</p>
+    </div>
+
+    <div class="dash-chip">
+      Rows
+      <strong>{% if eurusd_data %}{{ eurusd_data|length }}{% else %}0{% endif %}</strong>
+    </div>
+  </div>
+
+  {% if eurusd_data and "error" in eurusd_data.0 %}
+    <div class="dash-table-card">
+      <div class="dash-empty-row">
+        <td>
+          <span class="dash-empty-title">TwelveData returned an error</span>
+          <span class="dash-empty-copy">{{ eurusd_data.0.error }}</span>
+        </td>
+      </div>
+    </div>
+  {% else %}
+    <div class="dash-table-card">
+      <div class="dash-table-scroll">
+        <table class="dash-data-table">
+          <thead>
+            <tr>
+              {% if eurusd_data %}
+                {% for key in eurusd_data.0.keys %}
+                  <th>{{ key }}</th>
+                {% endfor %}
+              {% else %}
+                <th>Data</th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in eurusd_data %}
+              <tr>
+                {% for val in row.values %}
+                  <td>{{ val }}</td>
+                {% endfor %}
+              </tr>
+            {% empty %}
+              <tr class="dash-empty-row">
+                <td colspan="20">
+                  <span class="dash-empty-title">No EUR/USD data available</span>
+                  <span class="dash-empty-copy">Refresh the feed or inspect the raw JSON endpoint for more detail.</span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="dash-panel-actions">
+    <a href="{% url 'eurusd_twelvedata_json' %}" class="dash-pill-link">View JSON</a>
+    <a href="{% url 'eurusd_twelvedata_page' %}" class="dash-pill-link">View Table</a>
+  </div>
+</section>
+{% endblock %}

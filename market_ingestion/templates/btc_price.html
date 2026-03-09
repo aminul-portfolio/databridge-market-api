@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}BTC/USD Live Price{% endblock %}
+{% block title_heading %}BTC/USD Live Price{% endblock %}
+{% block subtitle %}Single-price monitor view for the latest BTC/USD value.{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'home' %}" class="btn btn-outline-primary">Back to Dashboard</a>
+{% endblock %}
+
+{% block content %}
+<div class="db-panel">
+  <h2 class="mb-3">BTC/USD Live Price</h2>
+  <div class="display-4 fw-bold mb-2">${{ price }}</div>
+  <p class="db-muted mb-0">This page refreshes automatically every 60 seconds.</p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  setTimeout(function () {
+    location.reload();
+  }, 60000);
+</script>
+{% endblock %}

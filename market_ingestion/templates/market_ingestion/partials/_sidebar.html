@@ -1,0 +1,36 @@
+<aside class="db-sidebar">
+    <div class="db-brand">
+        <div class="db-brand-mark">DB</div>
+        <div>
+            <div class="db-brand-name">{{ APP_NAME }}</div>
+            <div class="db-brand-meta">SaaS Market Console</div>
+        </div>
+    </div>
+
+    <nav class="db-nav">
+        <p class="db-nav-label">Workspace</p>
+        <a class="db-nav-link" href="{% url 'home' %}">Dashboard</a>
+        <a class="db-nav-link" href="{% url 'btc_yfinance_page' %}">BTC Overview</a>
+        <a class="db-nav-link" href="{% url 'btc_ccxt_page' %}">Crypto Snapshot</a>
+        <a class="db-nav-link" href="{% url 'eurusd_twelvedata_page' %}">FX Overview</a>
+
+        <p class="db-nav-label">Analytics</p>
+        <a class="db-nav-link" href="{% url 'btc_yfinance_info' %}">Market Info</a>
+        <a class="db-nav-link" href="{% url 'btc_yfinance_compare' %}">Journal Compare</a>
+        <a class="db-nav-link" href="{% url 'btc_yfinance_plot' %}">BTC Chart</a>
+
+        <p class="db-nav-label">Operations</p>
+        <a class="db-nav-link" href="{% url 'ops:ingestion_runs' %}">Ingestion Runs</a>
+        <a class="db-nav-link" href="{% url 'ops:metric_snapshots' %}">Metric Snapshots</a>
+        <a class="db-nav-link" href="{% url 'ops:market_bars' %}">Market Bars</a>
+
+        <p class="db-nav-label">Explorer</p>
+        <a class="db-nav-link" href="{% url 'btc_yfinance' %}">BTC JSON</a>
+        <a class="db-nav-link" href="{% url 'btc_ccxt' %}">ccxt JSON</a>
+        <a class="db-nav-link" href="{% url 'eurusd_twelvedata_json' %}">EUR/USD JSON</a>
+
+        <p class="db-nav-label">External</p>
+        <a class="db-nav-link" href="{{ STREAMLIT_URL }}" target="_blank" rel="noreferrer">Streamlit Dashboard</a>
+        <a class="db-nav-link" href="/admin/">Admin</a>
+    </nav>
+</aside>

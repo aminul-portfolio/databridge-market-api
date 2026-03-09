@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block title_heading %}{{ title }}{% endblock %}
+{% block subtitle %}Quick visual inspection of recent market movement and trend behaviour.{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'home' %}" class="btn btn-outline-primary">Back to Dashboard</a>
+{% endblock %}
+
+{% block content %}
+<div class="db-panel text-center">
+  <h2 class="mb-3">{{ title }}</h2>
+  <img src="data:image/png;base64,{{ chart_base64 }}" class="img-fluid rounded border" alt="{{ title }}">
+</div>
+{% endblock %}

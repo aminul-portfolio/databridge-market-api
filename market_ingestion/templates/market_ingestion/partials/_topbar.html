@@ -1,0 +1,13 @@
+<header class="db-topbar">
+    <div class="db-topbar-left">
+        <span class="db-badge">{{ APP_ENV|upper }}</span>
+        <span class="db-topbar-text">DataBridge Market API</span>
+    </div>
+
+    <div class="db-topbar-right">
+        <a class="db-topbar-link" href="{% url 'home' %}">Home</a>
+        <a class="db-topbar-link" href="{% url 'ops:ingestion_runs' %}">Operations</a>
+        <a class="db-topbar-link" href="/admin/">Admin</a>
+        <a class="db-topbar-link" href="{{ STREAMLIT_URL }}" target="_blank" rel="noreferrer">Streamlit</a>
+    </div>
+</header>
