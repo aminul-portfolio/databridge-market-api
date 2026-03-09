@@ -1,6 +1,7 @@
 from django.db import models
 
 
+
 class TradeLog(models.Model):
     symbol = models.CharField(max_length=20)
     open_time = models.DateTimeField()
@@ -42,7 +43,6 @@ class BacktestResult(models.Model):
     def __str__(self):
         return f"{self.symbol} {self.strategy} ({self.timestamp.strftime('%Y-%m-%d')})"
 
-from django.db import models
 
 
 SOURCE_CHOICES = [

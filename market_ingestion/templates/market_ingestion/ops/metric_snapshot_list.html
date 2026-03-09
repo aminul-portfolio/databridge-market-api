@@ -50,8 +50,32 @@
 
 <div class="ops-stat-row">
   <div class="ops-stat-chip">
-    Total results
+    Filtered results
     <strong>{{ page_obj.paginator.count }}</strong>
+  </div>
+  <div class="ops-stat-chip">
+    Total snapshots
+    <strong>{{ summary.total_snapshots }}</strong>
+  </div>
+  <div class="ops-stat-chip">
+    Latest snapshot
+    <strong>
+      {% if summary.latest_snapshot %}
+        {{ summary.latest_snapshot.snapshot_time|date:"Y-m-d H:i" }}
+      {% else %}
+        —
+      {% endif %}
+    </strong>
+  </div>
+  <div class="ops-stat-chip">
+    Latest symbol
+    <strong>
+      {% if summary.latest_snapshot %}
+        {{ summary.latest_snapshot.symbol }}
+      {% else %}
+        —
+      {% endif %}
+    </strong>
   </div>
 </div>
 

@@ -77,10 +77,18 @@
 <section class="ops-tabs-wrap">
   <div class="ops-tabs-meta">
     <p class="ops-tabs-label">Operations Workspace</p>
-    <p class="ops-tabs-subtitle">Inspect ETL runs, metric outputs, and normalized market bars.</p>
+    <p class="ops-tabs-subtitle">Inspect operational summaries, ETL runs, metric outputs, and normalized market bars.</p>
   </div>
 
   <nav class="ops-tabs-bar" aria-label="Operational navigation">
+    <a
+      href="{% url 'ops:dashboard' %}"
+      class="ops-tab-link {% if current_section == 'dashboard' %}is-active{% endif %}"
+      {% if current_section == 'dashboard' %}aria-current="page"{% endif %}
+    >
+      Ops Dashboard
+    </a>
+
     <a
       href="{% url 'ops:ingestion_runs' %}"
       class="ops-tab-link {% if current_section == 'runs' %}is-active{% endif %}"

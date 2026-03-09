@@ -1,8 +1,8 @@
-from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 from django.core.paginator import Paginator
 from django.shortcuts import render
 
-from market_ingestion.models import IngestionRun, MarketBar, MetricSnapshot
+from market_ingestion.models import IngestionRun, MarketBar, MetricSnapshot, TradeJournalEntry
 
 
 def _querystring_without_page(request):
@@ -11,7 +11,32 @@ def _querystring_without_page(request):
     return query.urlencode()
 
 
-@login_required
+@staff_member_required(login_url="admin:login")
+def ops_dashboard(request):
+    latest_run = IngestionRun.objects.order_by("-started_at", "-id").first()
+    latest_successful_run = (
+        IngestionRun.objects.filter(status="success").order_by("-started_at", "-id").first()
+    )
+    latest_snapshot = MetricSnapshot.objects.order_by("-snapshot_time", "-id").first()
+
+    context = {
+        "page_title": "Operations Dashboard",
+        "current_section": "dashboard",
+        "total_runs": IngestionRun.objects.count(),
+        "failed_runs": IngestionRun.objects.filter(status="failed").count(),
+        "successful_runs": IngestionRun.objects.filter(status="success").count(),
+        "total_bars": MarketBar.objects.count(),
+        "total_snapshots": MetricSnapshot.objects.count(),
+        "total_journal_entries": TradeJournalEntry.objects.count(),
+        "latest_run": latest_run,
+        "latest_successful_run": latest_successful_run,
+        "latest_snapshot": latest_snapshot,
+        "recent_runs": IngestionRun.objects.order_by("-started_at", "-id")[:10],
+    }
+    return render(request, "market_ingestion/ops/dashboard.html", context)
+
+
+@staff_member_required(login_url="admin:login")
 def ingestion_run_list(request):
     queryset = IngestionRun.objects.all()
 
@@ -55,6 +80,12 @@ def ingestion_run_list(request):
         "page_title": "Ingestion Runs",
         "page_obj": page_obj,
         "rows": rows,
+        "summary": {
+            "total_runs": IngestionRun.objects.count(),
+            "successful_runs": IngestionRun.objects.filter(status="success").count(),
+            "failed_runs": IngestionRun.objects.filter(status="failed").count(),
+            "latest_run": IngestionRun.objects.order_by("-started_at", "-id").first(),
+        },
         "filter_choices": {
             "sources": list(
                 IngestionRun.objects.order_by().values_list("source", flat=True).distinct()
@@ -81,7 +112,7 @@ def ingestion_run_list(request):
     return render(request, "market_ingestion/ops/ingestion_run_list.html", context)
 
 
-@login_required
+@staff_member_required(login_url="admin:login")
 def metric_snapshot_list(request):
     queryset = MetricSnapshot.objects.select_related("source_run").all()
 
@@ -115,10 +146,16 @@ def metric_snapshot_list(request):
             }
         )
 
+    latest_snapshot = MetricSnapshot.objects.order_by("-snapshot_time", "-id").first()
+
     context = {
         "page_title": "Metric Snapshots",
         "page_obj": page_obj,
         "rows": rows,
+        "summary": {
+            "total_snapshots": MetricSnapshot.objects.count(),
+            "latest_snapshot": latest_snapshot,
+        },
         "filter_choices": {
             "sources": list(
                 IngestionRun.objects.order_by().values_list("source", flat=True).distinct()
@@ -143,7 +180,7 @@ def metric_snapshot_list(request):
     return render(request, "market_ingestion/ops/metric_snapshot_list.html", context)
 
 
-@login_required
+@staff_member_required(login_url="admin:login")
 def market_bar_list(request):
     queryset = MarketBar.objects.select_related("ingestion_run").all()
 
@@ -181,10 +218,16 @@ def market_bar_list(request):
             }
         )
 
+    latest_bar = MarketBar.objects.order_by("-timestamp", "-id").first()
+
     context = {
         "page_title": "Market Bars",
         "page_obj": page_obj,
         "rows": rows,
+        "summary": {
+            "total_bars": MarketBar.objects.count(),
+            "latest_bar": latest_bar,
+        },
         "filter_choices": {
             "sources": list(
                 MarketBar.objects.order_by().values_list("source", flat=True).distinct()

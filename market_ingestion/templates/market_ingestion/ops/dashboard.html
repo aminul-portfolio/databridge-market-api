@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block title_heading %}{{ page_title }}{% endblock %}
+{% block subtitle %}Operational summary of ingestion activity, stored market data, and computed analytics outputs.{% endblock %}
+
+{% block content %}
+{% include "market_ingestion/ops/_ops_page_styles.html" %}
+{% include "market_ingestion/ops/_ops_tabs.html" %}
+{% include "market_ingestion/ops/_ops_api_links.html" %}
+
+<section class="ops-stat-row">
+  <div class="ops-stat-chip">
+    Total runs
+    <strong>{{ total_runs }}</strong>
+  </div>
+  <div class="ops-stat-chip">
+    Successful runs
+    <strong>{{ successful_runs }}</strong>
+  </div>
+  <div class="ops-stat-chip">
+    Failed runs
+    <strong>{{ failed_runs }}</strong>
+  </div>
+  <div class="ops-stat-chip">
+    Market bars
+    <strong>{{ total_bars }}</strong>
+  </div>
+  <div class="ops-stat-chip">
+    Snapshots
+    <strong>{{ total_snapshots }}</strong>
+  </div>
+  <div class="ops-stat-chip">
+    Journal entries
+    <strong>{{ total_journal_entries }}</strong>
+  </div>
+</section>
+
+<section class="ops-table-card" style="margin-bottom: 1rem;">
+  <div class="ops-card-header">
+    <div>
+      <h2 class="ops-card-title">Latest platform state</h2>
+      <p class="ops-card-subtitle">Most recent ingestion and metrics activity stored in the database.</p>
+    </div>
+  </div>
+
+  <div class="ops-table-scroll">
+    <table class="ops-data-table">
+      <tbody>
+        <tr>
+          <th>Latest run</th>
+          <td>
+            {% if latest_run %}
+              {{ latest_run.source }} / {{ latest_run.symbol }} / {{ latest_run.timeframe|default:"-" }} / {{ latest_run.status }}
+            {% else %}
+              —
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <th>Latest run started</th>
+          <td>
+            {% if latest_run %}
+              {{ latest_run.started_at }}
+            {% else %}
+              —
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <th>Last successful run</th>
+          <td>
+            {% if latest_successful_run %}
+              {{ latest_successful_run.source }} / {{ latest_successful_run.symbol }} / {{ latest_successful_run.timeframe|default:"-" }}
+            {% else %}
+              —
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <th>Latest snapshot</th>
+          <td>
+            {% if latest_snapshot %}
+              {{ latest_snapshot.symbol }} / {{ latest_snapshot.timeframe }} / {{ latest_snapshot.snapshot_time }}
+            {% else %}
+              —
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <th>Latest signal</th>
+          <td>
+            {% if latest_snapshot %}
+              {{ latest_snapshot.crossover_signal }}
+            {% else %}
+              —
+            {% endif %}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="ops-table-card">
+  <div class="ops-card-header">
+    <div>
+      <h2 class="ops-card-title">Recent ingestion runs</h2>
+      <p class="ops-card-subtitle">Latest ETL activity across configured sources.</p>
+    </div>
+  </div>
+
+  <div class="ops-table-scroll">
+    <table class="ops-data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Source</th>
+          <th>Symbol</th>
+          <th>Timeframe</th>
+          <th>Status</th>
+          <th>Started</th>
+          <th>Inserted</th>
+          <th>Updated</th>
+          <th>Skipped</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for run in recent_runs %}
+        <tr>
+          <td>
+            <a href="{% url 'api_ops:run_detail' run.id %}" class="ops-id-link" target="_blank" rel="noreferrer">
+              {{ run.id }}
+            </a>
+          </td>
+          <td>{{ run.source }}</td>
+          <td>{{ run.symbol }}</td>
+          <td>{{ run.timeframe }}</td>
+          <td>{{ run.status }}</td>
+          <td>{{ run.started_at }}</td>
+          <td>{{ run.rows_inserted }}</td>
+          <td>{{ run.rows_updated }}</td>
+          <td>{{ run.rows_skipped }}</td>
+        </tr>
+        {% empty %}
+        <tr class="ops-empty-row">
+          <td colspan="9">
+            <span class="ops-empty-title">No ingestion runs available</span>
+            Run an ingestion command to populate the dashboard.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

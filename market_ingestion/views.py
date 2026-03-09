@@ -113,58 +113,26 @@ def _twelvedata_to_records(data_td: dict) -> list[dict]:
 
 
 # Home dashboard view
+from django.shortcuts import render
+from .models import IngestionRun, MarketBar, MetricSnapshot, TradeJournalEntry
+
+
 def home(request):
-    try:
-        btc_yfinance_data = _fetch_btc_yfinance_history(limit=5).to_dict(orient="records")
-    except Exception as exc:
-        btc_yfinance_data = [{"error": f"Failed to fetch BTC yfinance data: {exc}"}]
+    latest_run = IngestionRun.objects.order_by("-id").first()
+    latest_successful_run = IngestionRun.objects.filter(status="success").order_by("-id").first()
+    latest_snapshot = MetricSnapshot.objects.order_by("-id").first()
 
-    try:
-        btc_ccxt_ticker = _fetch_btc_ccxt_ticker()
-        btc_ccxt_data = [btc_ccxt_ticker]
-        btc_ccxt_json_str = _to_pretty_json(btc_ccxt_ticker)
-    except Exception as exc:
-        btc_ccxt_data = [{"error": f"Failed to fetch BTC ccxt data: {exc}"}]
-        btc_ccxt_json_str = _to_pretty_json(btc_ccxt_data[0])
-
-    data_td = _fetch_eurusd_twelvedata(outputsize=5)
-    eurusd_data = _twelvedata_to_records(data_td)
-
-    return render(
-        request,
-        "home.html",
-        {
-            "btc_yfinance_data": btc_yfinance_data,
-            "btc_ccxt_data": btc_ccxt_data,
-            "btc_ccxt_json": btc_ccxt_json_str,
-            "eurusd_data": eurusd_data,
-        },
-    )
-
-
-# Save an example OHLCV row manually
-def save_ohlcv_sample(request):
-    OHLCV.objects.create(
-        symbol="BTC/USDT",
-        timestamp=timezone.now(),
-        open=30000,
-        high=31000,
-        low=29500,
-        close=30500,
-        volume=123.45,
-    )
-    return JsonResponse({"status": "OHLCV sample saved"})
-
-
-# Save an example TradeLog row manually
-def save_trade(request):
-    TradeLog.objects.create(
-        symbol="BTC/USD",
-        open_time=timezone.now(),
-        open_price=20000,
-        volume=0.5,
-    )
-    return JsonResponse({"status": "TradeLog saved"})
+    context = {
+        "total_runs": IngestionRun.objects.count(),
+        "total_bars": MarketBar.objects.count(),
+        "total_snapshots": MetricSnapshot.objects.count(),
+        "total_journal_entries": TradeJournalEntry.objects.count(),
+        "latest_run": latest_run,
+        "latest_successful_run": latest_successful_run,
+        "latest_snapshot": latest_snapshot,
+        "recent_runs": IngestionRun.objects.order_by("-id")[:5],
+    }
+    return render(request, "home.html", context)
 
 
 # BTC yfinance JSON

@@ -60,8 +60,30 @@
 
 <div class="ops-stat-row">
   <div class="ops-stat-chip">
-    Total results
+    Filtered results
     <strong>{{ page_obj.paginator.count }}</strong>
+  </div>
+  <div class="ops-stat-chip">
+    Total runs
+    <strong>{{ summary.total_runs }}</strong>
+  </div>
+  <div class="ops-stat-chip">
+    Successful
+    <strong>{{ summary.successful_runs }}</strong>
+  </div>
+  <div class="ops-stat-chip">
+    Failed
+    <strong>{{ summary.failed_runs }}</strong>
+  </div>
+  <div class="ops-stat-chip">
+    Latest run
+    <strong>
+      {% if summary.latest_run %}
+        {{ summary.latest_run.started_at|date:"Y-m-d H:i" }}
+      {% else %}
+        —
+      {% endif %}
+    </strong>
   </div>
 </div>
 

@@ -50,8 +50,32 @@
 
 <div class="ops-stat-row">
   <div class="ops-stat-chip">
-    Total results
+    Filtered results
     <strong>{{ page_obj.paginator.count }}</strong>
+  </div>
+  <div class="ops-stat-chip">
+    Total bars
+    <strong>{{ summary.total_bars }}</strong>
+  </div>
+  <div class="ops-stat-chip">
+    Latest bar
+    <strong>
+      {% if summary.latest_bar %}
+        {{ summary.latest_bar.timestamp|date:"Y-m-d H:i" }}
+      {% else %}
+        —
+      {% endif %}
+    </strong>
+  </div>
+  <div class="ops-stat-chip">
+    Latest symbol
+    <strong>
+      {% if summary.latest_bar %}
+        {{ summary.latest_bar.symbol }}
+      {% else %}
+        —
+      {% endif %}
+    </strong>
   </div>
 </div>
 

@@ -1,11 +1,13 @@
 {% extends "base.html" %}
 
 {% block title %}Dashboard{% endblock %}
-{% block title_heading %}Market Dashboard{% endblock %}
-{% block subtitle %}Multi-source market data overview across yfinance, ccxt, and TwelveData.{% endblock %}
+{% block title_heading %}DataBridge Market API{% endblock %}
+{% block subtitle %}Operational overview of ingestion activity, stored market data, computed metrics, and portfolio-facing API access.{% endblock %}
 
 {% block page_actions %}
+{% if STREAMLIT_URL %}
 <a href="{{ STREAMLIT_URL }}" target="_blank" rel="noreferrer" class="btn btn-primary">Open Streamlit</a>
+{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -144,7 +146,7 @@
 
   .dash-layout-grid {
     display: grid;
-    grid-template-columns: 1.35fr 1fr;
+    grid-template-columns: 1.2fr 0.8fr;
     gap: 1.25rem;
     margin-bottom: 1.25rem;
   }
@@ -162,7 +164,7 @@
 
   .dash-data-table {
     width: 100%;
-    min-width: 880px;
+    min-width: 760px;
     border-collapse: separate;
     border-spacing: 0;
   }
@@ -243,30 +245,6 @@
     word-break: break-word;
   }
 
-  .dash-pre-wrap {
-    margin-top: 1rem;
-    padding: 1rem;
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    border-radius: 14px;
-    background: #0f172a;
-    overflow-x: auto;
-  }
-
-  .dash-pre-wrap pre {
-    margin: 0;
-    white-space: pre-wrap;
-    word-break: break-word;
-    color: #e2e8f0;
-    font-size: 0.84rem;
-  }
-
-  .dash-panel-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-    margin-top: 1rem;
-  }
-
   .dash-chip {
     display: inline-flex;
     align-items: center;
@@ -283,6 +261,38 @@
 
   .dash-chip strong {
     color: #0f172a;
+  }
+
+  .dash-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.28rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .dash-status-success {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  .dash-status-partial {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .dash-status-failed {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .dash-status-started {
+    background: #e0e7ff;
+    color: #3730a3;
   }
 
   @media (max-width: 1100px) {
@@ -309,23 +319,23 @@
 
 <section class="dash-stat-grid">
   <div class="dash-stat-card">
-    <p class="dash-stat-label">Data Sources</p>
-    <p class="dash-stat-value">3</p>
+    <p class="dash-stat-label">Ingestion Runs</p>
+    <p class="dash-stat-value">{{ total_runs }}</p>
   </div>
 
   <div class="dash-stat-card">
-    <p class="dash-stat-label">BTC yfinance Rows</p>
-    <p class="dash-stat-value">{% if btc_yfinance_data %}{{ btc_yfinance_data|length }}{% else %}0{% endif %}</p>
+    <p class="dash-stat-label">Stored Market Bars</p>
+    <p class="dash-stat-value">{{ total_bars }}</p>
   </div>
 
   <div class="dash-stat-card">
-    <p class="dash-stat-label">ccxt Snapshots</p>
-    <p class="dash-stat-value">{% if btc_ccxt_data %}{{ btc_ccxt_data|length }}{% else %}0{% endif %}</p>
+    <p class="dash-stat-label">Metric Snapshots</p>
+    <p class="dash-stat-value">{{ total_snapshots }}</p>
   </div>
 
   <div class="dash-stat-card">
-    <p class="dash-stat-label">FX Rows</p>
-    <p class="dash-stat-value">{% if eurusd_data %}{{ eurusd_data|length }}{% else %}0{% endif %}</p>
+    <p class="dash-stat-label">Journal Entries</p>
+    <p class="dash-stat-value">{{ total_journal_entries }}</p>
   </div>
 </section>
 
@@ -334,61 +344,45 @@
     <div>
       <p class="dash-panel-kicker">Workspace Shortcuts</p>
       <h2 class="dash-panel-title">Quick Access</h2>
-      <p class="dash-panel-subtitle">Jump into raw feeds, operational views, analytics pages, and external dashboard surfaces.</p>
+      <p class="dash-panel-subtitle">Jump into operational monitoring, API inspection, and supporting dashboard surfaces.</p>
     </div>
   </div>
 
   <div class="dash-action-groups">
     <div class="dash-action-group">
-      <h3 class="dash-action-group-title">Market Data Views</h3>
-      <p class="dash-action-group-subtitle">Inspect JSON endpoints, rendered tables, market info pages, and chart views.</p>
-
-      <div class="dash-action-row">
-        <a href="{% url 'btc_yfinance' %}" class="dash-pill-link">BTC JSON</a>
-        <a href="{% url 'btc_yfinance_page' %}" class="dash-pill-link">BTC Table</a>
-        <a href="{% url 'btc_yfinance_info' %}" class="dash-pill-link">Market Info</a>
-        <a href="{% url 'btc_yfinance_compare' %}" class="dash-pill-link">Journal Compare</a>
-        <a href="{% url 'btc_yfinance_plot' %}" class="dash-pill-link">BTC Chart</a>
-        <a href="{% url 'btc_ccxt' %}" class="dash-pill-link">ccxt JSON</a>
-        <a href="{% url 'btc_ccxt_page' %}" class="dash-pill-link">ccxt Table</a>
-        <a href="{% url 'eurusd_twelvedata_json' %}" class="dash-pill-link">EUR/USD JSON</a>
-        <a href="{% url 'eurusd_twelvedata_page' %}" class="dash-pill-link">EUR/USD Table</a>
-      </div>
-    </div>
-
-    <div class="dash-action-group">
       <h3 class="dash-action-group-title">Operations & Monitoring</h3>
-      <p class="dash-action-group-subtitle">Review ETL runs, computed snapshots, normalized market bars, and external dashboard views.</p>
+      <p class="dash-action-group-subtitle">Review ETL runs, computed snapshots, and normalized market bars stored in the database.</p>
 
       <div class="dash-action-row">
         <a href="{% url 'ops:ingestion_runs' %}" class="dash-pill-link">Ingestion Runs</a>
         <a href="{% url 'ops:metric_snapshots' %}" class="dash-pill-link">Metric Snapshots</a>
         <a href="{% url 'ops:market_bars' %}" class="dash-pill-link">Market Bars</a>
+        {% if STREAMLIT_URL %}
         <a href="{{ STREAMLIT_URL }}" target="_blank" rel="noreferrer" class="dash-pill-link is-primary">Streamlit Dashboard</a>
+        {% endif %}
       </div>
     </div>
-      <div class="dash-action-group">
-          <h3 class="dash-action-group-title">API Access</h3>
-          <p class="dash-action-group-subtitle">Direct JSON endpoints plus ready-to-use filter examples for
-              integrations, testing, and inspection.</p>
 
-          <div class="dash-action-row" style="margin-bottom: 0.75rem;">
-              <a href="{% url 'api_ops:reference' %}" class="dash-pill-link">API Reference</a>
-              <a href="{% url 'api_ops:runs' %}" class="dash-pill-link">Runs API</a>
-              <a href="{% url 'api_ops:snapshots' %}" class="dash-pill-link">Snapshots API</a>
-              <a href="{% url 'api_ops:bars' %}" class="dash-pill-link">Bars API</a>
-          </div>
+    <div class="dash-action-group">
+      <h3 class="dash-action-group-title">API Access</h3>
+      <p class="dash-action-group-subtitle">Use JSON endpoints and filter examples for review, integration, and portfolio demonstration.</p>
 
-          <div class="dash-action-row">
-              <a href="{% url 'api_ops:runs' %}?status=success" class="dash-pill-link">Runs: status=success</a>
-              <a href="{% url 'api_ops:runs' %}?source=yfinance" class="dash-pill-link">Runs: source=yfinance</a>
-              <a href="{% url 'api_ops:snapshots' %}?symbol=BTC-USD" class="dash-pill-link">Snapshots:
-                  symbol=BTC-USD</a>
-              <a href="{% url 'api_ops:bars' %}?source=yfinance" class="dash-pill-link">Bars: source=yfinance</a>
-              <a href="{% url 'api_ops:bars' %}?symbol=BTC-USD" class="dash-pill-link">Bars: symbol=BTC-USD</a>
-              <a href="{% url 'api_ops:bars' %}?timeframe=1h" class="dash-pill-link">Bars: timeframe=1h</a>
-          </div>
+      <div class="dash-action-row" style="margin-bottom: 0.75rem;">
+        <a href="{% url 'api_ops:reference' %}" class="dash-pill-link">API Reference</a>
+        <a href="{% url 'api_ops:runs' %}" class="dash-pill-link">Runs API</a>
+        <a href="{% url 'api_ops:snapshots' %}" class="dash-pill-link">Snapshots API</a>
+        <a href="{% url 'api_ops:bars' %}" class="dash-pill-link">Bars API</a>
       </div>
+
+      <div class="dash-action-row">
+        <a href="{% url 'api_ops:runs' %}?status=success" class="dash-pill-link">Runs: status=success</a>
+        <a href="{% url 'api_ops:runs' %}?source=yfinance" class="dash-pill-link">Runs: source=yfinance</a>
+        <a href="{% url 'api_ops:snapshots' %}?symbol=BTC-USD" class="dash-pill-link">Snapshots: symbol=BTC-USD</a>
+        <a href="{% url 'api_ops:bars' %}?source=yfinance" class="dash-pill-link">Bars: source=yfinance</a>
+        <a href="{% url 'api_ops:bars' %}?symbol=BTC-USD" class="dash-pill-link">Bars: symbol=BTC-USD</a>
+        <a href="{% url 'api_ops:bars' %}?timeframe=1h" class="dash-pill-link">Bars: timeframe=1h</a>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -396,14 +390,14 @@
   <article class="dash-panel">
     <div class="dash-panel-header">
       <div>
-        <p class="dash-panel-kicker">Source Preview</p>
-        <h2 class="dash-panel-title">BTC/USD yfinance — Last 5 Records</h2>
-        <p class="dash-panel-subtitle">Quick visibility into the latest sample rows currently rendered in the dashboard context.</p>
+        <p class="dash-panel-kicker">Recent Activity</p>
+        <h2 class="dash-panel-title">Latest Ingestion Runs</h2>
+        <p class="dash-panel-subtitle">Most recent ETL execution history across configured data sources.</p>
       </div>
 
       <div class="dash-chip">
-        Rows
-        <strong>{% if btc_yfinance_data %}{{ btc_yfinance_data|length }}{% else %}0{% endif %}</strong>
+        Showing
+        <strong>{{ recent_runs|length }}</strong>
       </div>
     </div>
 
@@ -412,167 +406,120 @@
         <table class="dash-data-table">
           <thead>
             <tr>
-              {% if btc_yfinance_data %}
-                {% for key in btc_yfinance_data.0.keys %}
-                  <th>{{ key }}</th>
-                {% endfor %}
-              {% else %}
-                <th>Data</th>
-              {% endif %}
+              <th>Source</th>
+              <th>Symbol</th>
+              <th>Timeframe</th>
+              <th>Status</th>
+              <th>Inserted</th>
+              <th>Updated</th>
+              <th>Started</th>
             </tr>
           </thead>
           <tbody>
-            {% for row in btc_yfinance_data %}
-              <tr>
-                {% for val in row.values %}
-                  <td>{{ val }}</td>
-                {% endfor %}
-              </tr>
+            {% for run in recent_runs %}
+            <tr>
+              <td>{{ run.source }}</td>
+              <td>{{ run.symbol }}</td>
+              <td>{{ run.timeframe|default:"-" }}</td>
+              <td>
+                <span class="dash-status dash-status-{{ run.status }}">
+                  {{ run.status }}
+                </span>
+              </td>
+              <td>{{ run.rows_inserted }}</td>
+              <td>{{ run.rows_updated }}</td>
+              <td>{{ run.started_at|date:"Y-m-d H:i" }}</td>
+            </tr>
             {% empty %}
-              <tr class="dash-empty-row">
-                <td colspan="20">
-                  <span class="dash-empty-title">No BTC yfinance data available</span>
-                  <span class="dash-empty-copy">Refresh the data source or open the raw endpoint for further inspection.</span>
-                </td>
-              </tr>
+            <tr class="dash-empty-row">
+              <td colspan="7">
+                <span class="dash-empty-title">No ingestion runs available</span>
+                <span class="dash-empty-copy">Run the ETL commands to populate operational data for review.</span>
+              </td>
+            </tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
-    </div>
-
-    <div class="dash-panel-actions">
-      <a href="{% url 'btc_yfinance' %}" class="dash-pill-link">View JSON</a>
-      <a href="{% url 'btc_yfinance_page' %}" class="dash-pill-link">View Table</a>
-      <a href="{% url 'btc_yfinance_info' %}" class="dash-pill-link">Market Info</a>
-      <a href="{% url 'btc_yfinance_compare' %}" class="dash-pill-link">Compare to Journal</a>
-      <a href="{% url 'btc_yfinance_plot' %}" class="dash-pill-link">View Chart</a>
     </div>
   </article>
 
   <article class="dash-panel">
     <div class="dash-panel-header">
       <div>
-        <p class="dash-panel-kicker">Live Snapshot</p>
-        <h2 class="dash-panel-title">BTC/USDT ccxt — Snapshot</h2>
-        <p class="dash-panel-subtitle">Current quote-style summary from the ccxt-backed source response.</p>
-      </div>
-
-      <div class="dash-chip">
-        Records
-        <strong>{% if btc_ccxt_data %}{{ btc_ccxt_data|length }}{% else %}0{% endif %}</strong>
+        <p class="dash-panel-kicker">Operational Summary</p>
+        <h2 class="dash-panel-title">Latest Platform State</h2>
+        <p class="dash-panel-subtitle">Quick visibility into the latest successful run and most recent metric snapshot.</p>
       </div>
     </div>
 
     <div class="dash-keyvalue">
       <div class="dash-kv-row">
-        <span class="dash-kv-label">Symbol</span>
-        <span class="dash-kv-value">{% if btc_ccxt_data %}{{ btc_ccxt_data.0.symbol }}{% else %}-{% endif %}</span>
+        <span class="dash-kv-label">Latest Run</span>
+        <span class="dash-kv-value">
+          {% if latest_run %}
+            {{ latest_run.source }} / {{ latest_run.symbol }} / {{ latest_run.timeframe|default:"-" }}
+          {% else %}
+            -
+          {% endif %}
+        </span>
       </div>
-      <div class="dash-kv-row">
-        <span class="dash-kv-label">Bid</span>
-        <span class="dash-kv-value">{% if btc_ccxt_data %}{{ btc_ccxt_data.0.bid }}{% else %}-{% endif %}</span>
-      </div>
-      <div class="dash-kv-row">
-        <span class="dash-kv-label">Ask</span>
-        <span class="dash-kv-value">{% if btc_ccxt_data %}{{ btc_ccxt_data.0.ask }}{% else %}-{% endif %}</span>
-      </div>
-      <div class="dash-kv-row">
-        <span class="dash-kv-label">Last Price</span>
-        <span class="dash-kv-value">{% if btc_ccxt_data %}{{ btc_ccxt_data.0.last }}{% else %}-{% endif %}</span>
-      </div>
-      <div class="dash-kv-row">
-        <span class="dash-kv-label">High</span>
-        <span class="dash-kv-value">{% if btc_ccxt_data %}{{ btc_ccxt_data.0.high }}{% else %}-{% endif %}</span>
-      </div>
-      <div class="dash-kv-row">
-        <span class="dash-kv-label">Low</span>
-        <span class="dash-kv-value">{% if btc_ccxt_data %}{{ btc_ccxt_data.0.low }}{% else %}-{% endif %}</span>
-      </div>
-      <div class="dash-kv-row">
-        <span class="dash-kv-label">Datetime</span>
-        <span class="dash-kv-value">{% if btc_ccxt_data %}{{ btc_ccxt_data.0.datetime }}{% else %}-{% endif %}</span>
-      </div>
-    </div>
 
-    <div class="dash-panel-actions">
-      <button class="dash-pill-link" type="button" data-bs-toggle="collapse" data-bs-target="#fullCcxtJson" aria-expanded="false" aria-controls="fullCcxtJson">
-        Show Full JSON
-      </button>
-      <a href="{% url 'btc_ccxt' %}" class="dash-pill-link">View JSON</a>
-      <a href="{% url 'btc_ccxt_page' %}" class="dash-pill-link">View Table</a>
-    </div>
+      <div class="dash-kv-row">
+        <span class="dash-kv-label">Latest Run Status</span>
+        <span class="dash-kv-value">
+          {% if latest_run %}
+            {{ latest_run.status }}
+          {% else %}
+            -
+          {% endif %}
+        </span>
+      </div>
 
-    <div class="collapse" id="fullCcxtJson">
-      <div class="dash-pre-wrap">
-        <pre>{{ btc_ccxt_json }}</pre>
+      <div class="dash-kv-row">
+        <span class="dash-kv-label">Latest Run Started</span>
+        <span class="dash-kv-value">
+          {% if latest_run %}
+            {{ latest_run.started_at|date:"Y-m-d H:i" }}
+          {% else %}
+            -
+          {% endif %}
+        </span>
+      </div>
+
+      <div class="dash-kv-row">
+        <span class="dash-kv-label">Last Successful Run</span>
+        <span class="dash-kv-value">
+          {% if latest_successful_run %}
+            {{ latest_successful_run.source }} / {{ latest_successful_run.symbol }} / {{ latest_successful_run.timeframe|default:"-" }}
+          {% else %}
+            -
+          {% endif %}
+        </span>
+      </div>
+
+      <div class="dash-kv-row">
+        <span class="dash-kv-label">Latest Snapshot</span>
+        <span class="dash-kv-value">
+          {% if latest_snapshot %}
+            {{ latest_snapshot.symbol }} / {{ latest_snapshot.timeframe }} / {{ latest_snapshot.snapshot_time|date:"Y-m-d H:i" }}
+          {% else %}
+            -
+          {% endif %}
+        </span>
+      </div>
+
+      <div class="dash-kv-row">
+        <span class="dash-kv-label">Latest Snapshot Signal</span>
+        <span class="dash-kv-value">
+          {% if latest_snapshot %}
+            {{ latest_snapshot.crossover_signal }}
+          {% else %}
+            -
+          {% endif %}
+        </span>
       </div>
     </div>
   </article>
-</section>
-
-<section class="dash-panel">
-  <div class="dash-panel-header">
-    <div>
-      <p class="dash-panel-kicker">FX Feed Preview</p>
-      <h2 class="dash-panel-title">EUR/USD TwelveData — Last 5 Records</h2>
-      <p class="dash-panel-subtitle">Recent FX rows from the TwelveData response surface used in the dashboard.</p>
-    </div>
-
-    <div class="dash-chip">
-      Rows
-      <strong>{% if eurusd_data %}{{ eurusd_data|length }}{% else %}0{% endif %}</strong>
-    </div>
-  </div>
-
-  {% if eurusd_data and "error" in eurusd_data.0 %}
-    <div class="dash-table-card">
-      <div class="dash-empty-row">
-        <td>
-          <span class="dash-empty-title">TwelveData returned an error</span>
-          <span class="dash-empty-copy">{{ eurusd_data.0.error }}</span>
-        </td>
-      </div>
-    </div>
-  {% else %}
-    <div class="dash-table-card">
-      <div class="dash-table-scroll">
-        <table class="dash-data-table">
-          <thead>
-            <tr>
-              {% if eurusd_data %}
-                {% for key in eurusd_data.0.keys %}
-                  <th>{{ key }}</th>
-                {% endfor %}
-              {% else %}
-                <th>Data</th>
-              {% endif %}
-            </tr>
-          </thead>
-          <tbody>
-            {% for row in eurusd_data %}
-              <tr>
-                {% for val in row.values %}
-                  <td>{{ val }}</td>
-                {% endfor %}
-              </tr>
-            {% empty %}
-              <tr class="dash-empty-row">
-                <td colspan="20">
-                  <span class="dash-empty-title">No EUR/USD data available</span>
-                  <span class="dash-empty-copy">Refresh the feed or inspect the raw JSON endpoint for more detail.</span>
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  {% endif %}
-
-  <div class="dash-panel-actions">
-    <a href="{% url 'eurusd_twelvedata_json' %}" class="dash-pill-link">View JSON</a>
-    <a href="{% url 'eurusd_twelvedata_page' %}" class="dash-pill-link">View Table</a>
-  </div>
 </section>
 {% endblock %}
