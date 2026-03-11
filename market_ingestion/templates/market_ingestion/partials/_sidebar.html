@@ -1,33 +1,146 @@
 <aside class="db-sidebar">
-    <div class="db-brand">
-        <div class="db-brand-mark">DB</div>
-        <div>
-            <div class="db-brand-name">{{ APP_NAME }}</div>
-            <div class="db-brand-meta">Market Data Platform</div>
-        </div>
+  <div class="db-sidebar-top">
+    <div class="db-brand db-brand--stacked">
+      <div class="db-brand-mark">DB</div>
+      <div class="db-brand-copy">
+        <div class="db-brand-name">{{ APP_NAME }}</div>
+        <div class="db-brand-meta">Market Data Platform</div>
+      </div>
     </div>
 
-    <nav class="db-nav">
-        <p class="db-nav-label">Workspace</p>
-        <a class="db-nav-link" href="{% url 'home' %}">Dashboard</a>
+    <div class="db-sidebar-status">
+      <span class="db-sidebar-status-label">Environment</span>
+      <span class="db-sidebar-status-value">Operational Workspace</span>
+    </div>
+  </div>
 
-        <p class="db-nav-label">Operations</p>
-        <a class="db-nav-link" href="{% url 'ops:ingestion_runs' %}">Ingestion Runs</a>
-        <a class="db-nav-link" href="{% url 'ops:metric_snapshots' %}">Metric Snapshots</a>
-        <a class="db-nav-link" href="{% url 'ops:market_bars' %}">Market Bars</a>
+  <nav class="db-nav" aria-label="Sidebar navigation">
+    <div class="db-nav-group">
+      <p class="db-nav-label">Workspace</p>
+      <a class="db-nav-link" href="{% url 'home' %}">
+        <span class="db-nav-link-text">Dashboard</span>
+        <span class="db-nav-link-meta">Overview</span>
+      </a>
+    </div>
 
-        <p class="db-nav-label">API</p>
-        <a class="db-nav-link" href="{% url 'api_ops:reference' %}">API Reference</a>
-        <a class="db-nav-link" href="{% url 'api_ops:runs' %}">Runs API</a>
-        <a class="db-nav-link" href="{% url 'api_ops:snapshots' %}">Snapshots API</a>
-        <a class="db-nav-link" href="{% url 'api_ops:bars' %}">Bars API</a>
+    <div class="db-nav-group">
+      <p class="db-nav-label">Operations</p>
 
-        <p class="db-nav-label">Admin</p>
-        <a class="db-nav-link" href="/admin/">Admin</a>
+      <a class="db-nav-link" href="{% url 'ops:dashboard' %}">
+        <span class="db-nav-link-text">Ops Dashboard</span>
+        <span class="db-nav-link-meta">Control view</span>
+      </a>
 
-        {% if STREAMLIT_URL %}
-        <p class="db-nav-label">External</p>
-        <a class="db-nav-link" href="{{ STREAMLIT_URL }}" target="_blank" rel="noreferrer">Streamlit Dashboard</a>
-        {% endif %}
-    </nav>
+      <a class="db-nav-link" href="{% url 'ops:ingestion_runs' %}">
+        <span class="db-nav-link-text">Ingestion Runs</span>
+        <span class="db-nav-link-meta">Pipeline activity</span>
+      </a>
+
+      <a class="db-nav-link" href="{% url 'ops:metric_snapshots' %}">
+        <span class="db-nav-link-text">Metric Snapshots</span>
+        <span class="db-nav-link-meta">Computed outputs</span>
+      </a>
+
+      <a class="db-nav-link" href="{% url 'ops:market_bars' %}">
+        <span class="db-nav-link-text">Market Bars</span>
+        <span class="db-nav-link-meta">Normalized OHLCV</span>
+      </a>
+    </div>
+
+    <div class="db-nav-group">
+      <p class="db-nav-label">API Surface</p>
+
+      <a class="db-nav-link" href="{% url 'api_ops:reference' %}">
+        <span class="db-nav-link-text">API Reference</span>
+        <span class="db-nav-link-meta">Docs</span>
+      </a>
+
+      <a class="db-nav-link" href="{% url 'api_ops:runs' %}" target="_blank" rel="noreferrer">
+        <span class="db-nav-link-text">Runs API</span>
+        <span class="db-nav-link-meta">JSON</span>
+      </a>
+
+      <a class="db-nav-link" href="{% url 'api_ops:snapshots' %}" target="_blank" rel="noreferrer">
+        <span class="db-nav-link-text">Snapshots API</span>
+        <span class="db-nav-link-meta">JSON</span>
+      </a>
+
+      <a class="db-nav-link" href="{% url 'api_ops:bars' %}" target="_blank" rel="noreferrer">
+        <span class="db-nav-link-text">Bars API</span>
+        <span class="db-nav-link-meta">JSON</span>
+      </a>
+
+      <a class="db-nav-link" href="{% url 'api_ops:journal' %}" target="_blank" rel="noreferrer">
+        <span class="db-nav-link-text">Journal API</span>
+        <span class="db-nav-link-meta">JSON</span>
+      </a>
+    </div>
+
+    <div class="db-nav-group">
+      <p class="db-nav-label">Source Previews</p>
+
+      <a class="db-nav-link" href="{% url 'demo:btc_yfinance_page' %}">
+        <span class="db-nav-link-text">BTC yfinance Table</span>
+        <span class="db-nav-link-meta">Preview</span>
+      </a>
+
+      <a class="db-nav-link" href="{% url 'demo:btc_yfinance' %}" target="_blank" rel="noreferrer">
+        <span class="db-nav-link-text">BTC yfinance JSON</span>
+        <span class="db-nav-link-meta">Raw feed</span>
+      </a>
+
+      <a class="db-nav-link" href="{% url 'demo:btc_yfinance_info' %}">
+        <span class="db-nav-link-text">BTC Market Info</span>
+        <span class="db-nav-link-meta">Context</span>
+      </a>
+
+      <a class="db-nav-link" href="{% url 'demo:btc_ccxt_page' %}">
+        <span class="db-nav-link-text">BTC ccxt Table</span>
+        <span class="db-nav-link-meta">Preview</span>
+      </a>
+
+      <a class="db-nav-link" href="{% url 'demo:btc_ccxt' %}" target="_blank" rel="noreferrer">
+        <span class="db-nav-link-text">BTC ccxt JSON</span>
+        <span class="db-nav-link-meta">Raw feed</span>
+      </a>
+
+      <a class="db-nav-link" href="{% url 'demo:eurusd_twelvedata_page' %}">
+        <span class="db-nav-link-text">EUR/USD TwelveData</span>
+        <span class="db-nav-link-meta">Preview</span>
+      </a>
+
+      <a class="db-nav-link" href="{% url 'demo:eurusd_twelvedata_json' %}" target="_blank" rel="noreferrer">
+        <span class="db-nav-link-text">EUR/USD JSON</span>
+        <span class="db-nav-link-meta">Raw feed</span>
+      </a>
+
+      <a class="db-nav-link" href="{% url 'demo:btc_yfinance_compare' %}">
+        <span class="db-nav-link-text">Trade Comparison</span>
+        <span class="db-nav-link-meta">Analysis</span>
+      </a>
+
+      <a class="db-nav-link" href="{% url 'demo:btc_yfinance_plot' %}">
+        <span class="db-nav-link-text">BTC Chart</span>
+        <span class="db-nav-link-meta">Visual</span>
+      </a>
+    </div>
+
+    <div class="db-nav-group">
+      <p class="db-nav-label">Administration</p>
+      <a class="db-nav-link" href="{% url 'admin:index' %}">
+        <span class="db-nav-link-text">Admin Console</span>
+        <span class="db-nav-link-meta">Manage</span>
+      </a>
+    </div>
+
+    {% if STREAMLIT_URL %}
+    <div class="db-nav-group">
+      <p class="db-nav-label">External</p>
+      <a class="db-nav-link db-nav-link--external" href="{{ STREAMLIT_URL }}" target="_blank" rel="noreferrer">
+        <span class="db-nav-link-text">Streamlit Dashboard</span>
+        <span class="db-nav-link-meta">Launch</span>
+      </a>
+    </div>
+    {% endif %}
+  </nav>
 </aside>

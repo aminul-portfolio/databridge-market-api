@@ -1,47 +1,59 @@
-<section class="ops-filter-card" style="padding: 0.9rem 1rem;">
-  <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
-    <div>
-      <p style="margin: 0; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6366f1;">
-        API Access
-      </p>
-      <p style="margin: 0.25rem 0 0 0; font-size: 0.9rem; color: #64748b;">
-        Open the JSON endpoint for this dataset or use example filters below.
+{# market_ingestion/templates/market_ingestion/ops/_ops_api_links.html #}
+<section class="ops-filter-card ops-api-panel">
+  <div class="ops-api-header">
+    <div class="ops-api-meta">
+      <p class="ops-api-kicker">API Access</p>
+      <p class="ops-api-copy">
+        Open the JSON [JavaScript Object Notation] endpoint for this dataset or use example filters below.
       </p>
     </div>
 
-    <div style="display: flex; flex-wrap: wrap; gap: 0.6rem;">
-        <a href="{% url 'api_ops:reference' %}" class="ops-page-pill">API Reference</a>
+    <div class="ops-api-actions">
+      <a href="{% url 'api_ops:reference' %}" class="ops-page-pill" target="_blank" rel="noreferrer">API Reference</a>
 
-        {% if current_section == "runs" %}
-        <a href="{% url 'api_ops:runs' %}" class="ops-page-pill">Open Runs API</a>
-        {% elif current_section == "snapshots" %}
-        <a href="{% url 'api_ops:snapshots' %}" class="ops-page-pill">Open Snapshots API</a>
-        {% elif current_section == "bars" %}
-        <a href="{% url 'api_ops:bars' %}" class="ops-page-pill">Open Bars API</a>
-        {% endif %}
+      {% if current_section == "runs" %}
+      <a href="{% url 'api_ops:runs' %}" class="ops-page-pill" target="_blank" rel="noreferrer">Open Runs API</a>
+      {% elif current_section == "snapshots" %}
+      <a href="{% url 'api_ops:snapshots' %}" class="ops-page-pill" target="_blank" rel="noreferrer">Open Snapshots API</a>
+      {% elif current_section == "bars" %}
+      <a href="{% url 'api_ops:bars' %}" class="ops-page-pill" target="_blank" rel="noreferrer">Open Bars API</a>
+      {% elif current_section == "dashboard" %}
+      <a href="{% url 'api_ops:runs' %}" class="ops-page-pill" target="_blank" rel="noreferrer">Open Runs API</a>
+      <a href="{% url 'api_ops:snapshots' %}" class="ops-page-pill" target="_blank" rel="noreferrer">Open Snapshots API</a>
+      <a href="{% url 'api_ops:bars' %}" class="ops-page-pill" target="_blank" rel="noreferrer">Open Bars API</a>
+      <a href="{% url 'api_ops:journal' %}" class="ops-page-pill" target="_blank" rel="noreferrer">Open Journal API</a>
+      {% endif %}
     </div>
   </div>
 
-  <div style="display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.85rem;">
+  {% if current_section == "runs" or current_section == "snapshots" or current_section == "bars" or current_section == "dashboard" %}
+  <div class="ops-api-examples">
     {% if current_section == "runs" %}
-      <a href="{% url 'api_ops:runs' %}?status=success" class="ops-page-pill">status=success</a>
-      <a href="{% url 'api_ops:runs' %}?source=yfinance" class="ops-page-pill">source=yfinance</a>
-      <a href="{% url 'api_ops:runs' %}?symbol=BTC-USD" class="ops-page-pill">symbol=BTC-USD</a>
-      <a href="{% url 'api_ops:runs' %}?timeframe=1h" class="ops-page-pill">timeframe=1h</a>
-      <a href="{% url 'api_ops:runs' %}?page=1&page_size=10" class="ops-page-pill">page=1&page_size=10</a>
+      <a href="{% url 'api_ops:runs' %}?status=success" class="ops-page-pill" target="_blank" rel="noreferrer">status=success</a>
+      <a href="{% url 'api_ops:runs' %}?source=yfinance" class="ops-page-pill" target="_blank" rel="noreferrer">source=yfinance</a>
+      <a href="{% url 'api_ops:runs' %}?symbol=BTC-USD" class="ops-page-pill" target="_blank" rel="noreferrer">symbol=BTC-USD</a>
+      <a href="{% url 'api_ops:runs' %}?timeframe=1h" class="ops-page-pill" target="_blank" rel="noreferrer">timeframe=1h</a>
+      <a href="{% url 'api_ops:runs' %}?page=1&page_size=10" class="ops-page-pill" target="_blank" rel="noreferrer">page=1&page_size=10</a>
 
     {% elif current_section == "snapshots" %}
-      <a href="{% url 'api_ops:snapshots' %}?source=yfinance" class="ops-page-pill">source=yfinance</a>
-      <a href="{% url 'api_ops:snapshots' %}?symbol=BTC-USD" class="ops-page-pill">symbol=BTC-USD</a>
-      <a href="{% url 'api_ops:snapshots' %}?timeframe=1h" class="ops-page-pill">timeframe=1h</a>
-      <a href="{% url 'api_ops:snapshots' %}?page=1&page_size=10" class="ops-page-pill">page=1&page_size=10</a>
+      <a href="{% url 'api_ops:snapshots' %}?source=yfinance" class="ops-page-pill" target="_blank" rel="noreferrer">source=yfinance</a>
+      <a href="{% url 'api_ops:snapshots' %}?symbol=BTC-USD" class="ops-page-pill" target="_blank" rel="noreferrer">symbol=BTC-USD</a>
+      <a href="{% url 'api_ops:snapshots' %}?timeframe=1h" class="ops-page-pill" target="_blank" rel="noreferrer">timeframe=1h</a>
+      <a href="{% url 'api_ops:snapshots' %}?page=1&page_size=10" class="ops-page-pill" target="_blank" rel="noreferrer">page=1&page_size=10</a>
 
     {% elif current_section == "bars" %}
-      <a href="{% url 'api_ops:bars' %}?source=yfinance" class="ops-page-pill">source=yfinance</a>
-      <a href="{% url 'api_ops:bars' %}?symbol=BTC-USD" class="ops-page-pill">symbol=BTC-USD</a>
-      <a href="{% url 'api_ops:bars' %}?timeframe=1h" class="ops-page-pill">timeframe=1h</a>
-      <a href="{% url 'api_ops:bars' %}?source=yfinance&symbol=BTC-USD&timeframe=1h" class="ops-page-pill">BTC-USD + yfinance + 1h</a>
-      <a href="{% url 'api_ops:bars' %}?page=1&page_size=25" class="ops-page-pill">page=1&page_size=25</a>
+      <a href="{% url 'api_ops:bars' %}?source=yfinance" class="ops-page-pill" target="_blank" rel="noreferrer">source=yfinance</a>
+      <a href="{% url 'api_ops:bars' %}?symbol=BTC-USD" class="ops-page-pill" target="_blank" rel="noreferrer">symbol=BTC-USD</a>
+      <a href="{% url 'api_ops:bars' %}?timeframe=1h" class="ops-page-pill" target="_blank" rel="noreferrer">timeframe=1h</a>
+      <a href="{% url 'api_ops:bars' %}?source=yfinance&symbol=BTC-USD&timeframe=1h" class="ops-page-pill" target="_blank" rel="noreferrer">BTC-USD + yfinance + 1h</a>
+      <a href="{% url 'api_ops:bars' %}?page=1&page_size=25" class="ops-page-pill" target="_blank" rel="noreferrer">page=1&page_size=25</a>
+
+    {% elif current_section == "dashboard" %}
+      <a href="{% url 'api_ops:runs' %}?status=success" class="ops-page-pill" target="_blank" rel="noreferrer">Runs: status=success</a>
+      <a href="{% url 'api_ops:snapshots' %}?symbol=BTC-USD" class="ops-page-pill" target="_blank" rel="noreferrer">Snapshots: BTC-USD</a>
+      <a href="{% url 'api_ops:bars' %}?source=yfinance&symbol=BTC-USD&timeframe=1h" class="ops-page-pill" target="_blank" rel="noreferrer">Bars: BTC-USD + 1h</a>
+      <a href="{% url 'api_ops:journal' %}?symbol=BTC-USD" class="ops-page-pill" target="_blank" rel="noreferrer">Journal: BTC-USD</a>
     {% endif %}
   </div>
+  {% endif %}
 </section>

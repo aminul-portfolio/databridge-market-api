@@ -4,8 +4,13 @@
 {% block title_heading %}{{ page_title }}{% endblock %}
 {% block subtitle %}Operational view of computed metric snapshots.{% endblock %}
 
+{% block page_actions %}
+<a href="{% url 'ops:dashboard' %}" class="btn btn-outline-primary">Ops Dashboard</a>
+<a href="{% url 'api_ops:reference' %}" class="btn btn-outline-primary">API Reference</a>
+<a href="{% url 'api_ops:snapshots' %}" class="btn btn-outline-primary" target="_blank" rel="noreferrer">Open Snapshots API</a>
+{% endblock %}
+
 {% block content %}
-{% include "market_ingestion/ops/_ops_page_styles.html" %}
 {% include "market_ingestion/ops/_ops_tabs.html" %}
 {% include "market_ingestion/ops/_ops_api_links.html" %}
 
@@ -53,10 +58,12 @@
     Filtered results
     <strong>{{ page_obj.paginator.count }}</strong>
   </div>
+
   <div class="ops-stat-chip">
     Total snapshots
     <strong>{{ summary.total_snapshots }}</strong>
   </div>
+
   <div class="ops-stat-chip">
     Latest snapshot
     <strong>
@@ -67,6 +74,7 @@
       {% endif %}
     </strong>
   </div>
+
   <div class="ops-stat-chip">
     Latest symbol
     <strong>
@@ -96,35 +104,33 @@
       <tbody>
         {% for row in rows %}
         <tr>
-            <td>
-                <a href="{% url 'api_ops:snapshot_detail' row.id %}" class="ops-id-link" target="_blank"
-                   rel="noreferrer">
-                    {{ row.id }}
-                </a>
-            </td>
-            <td>{{ row.source }}</td>
-            <td>{{ row.symbol }}</td>
-            <td>{{ row.timeframe }}</td>
-            <td>{{ row.snapshot_time }}</td>
-            <td>
-                {% if row.run_id %}
-                <a href="{% url 'api_ops:run_detail' row.run_id %}" class="ops-id-link" target="_blank"
-                   rel="noreferrer">
-                    {{ row.run_id }}
-                </a>
-                {% else %}
-                —
-                {% endif %}
-            </td>
-            <td>{{ row.label }}</td>
+          <td>
+            <a href="{% url 'api_ops:snapshot_detail' row.id %}" class="ops-id-link" target="_blank" rel="noreferrer">
+              {{ row.id }}
+            </a>
+          </td>
+          <td><span class="ops-source-tag">{{ row.source }}</span></td>
+          <td class="ops-mono">{{ row.symbol }}</td>
+          <td class="ops-mono">{{ row.timeframe }}</td>
+          <td class="ops-time">{{ row.snapshot_time|date:"Y-m-d H:i" }}</td>
+          <td>
+            {% if row.run_id %}
+              <a href="{% url 'api_ops:run_detail' row.run_id %}" class="ops-id-link" target="_blank" rel="noreferrer">
+                {{ row.run_id }}
+              </a>
+            {% else %}
+              —
+            {% endif %}
+          </td>
+          <td>{{ row.label|default:"—" }}</td>
         </tr>
         {% empty %}
-          <tr class="ops-empty-row">
-            <td colspan="7">
-              <span class="ops-empty-title">No metric snapshots found</span>
-              Compute a metric snapshot or clear the filters to see results here.
-            </td>
-          </tr>
+        <tr class="ops-empty-row">
+          <td colspan="7">
+            <span class="ops-empty-title">No metric snapshots found</span>
+            <span class="ops-empty-copy">Compute a metric snapshot or clear the filters to see results here.</span>
+          </td>
+        </tr>
         {% endfor %}
       </tbody>
     </table>
@@ -132,19 +138,20 @@
 </section>
 
 {% if page_obj.paginator.num_pages > 1 %}
-  <div class="ops-pagination">
-    <div class="ops-pagination-links">
-      {% if page_obj.has_previous %}
-        <a class="ops-page-pill" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>
-      {% endif %}
-      {% if page_obj.has_next %}
-        <a class="ops-page-pill" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a>
-      {% endif %}
-    </div>
+<div class="ops-pagination">
+  <div class="ops-pagination-links">
+    {% if page_obj.has_previous %}
+      <a class="ops-page-pill" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>
+    {% endif %}
 
-    <div class="ops-page-status">
-      Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-    </div>
+    {% if page_obj.has_next %}
+      <a class="ops-page-pill" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+    {% endif %}
   </div>
+
+  <div class="ops-page-status">
+    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+  </div>
+</div>
 {% endif %}
 {% endblock %}

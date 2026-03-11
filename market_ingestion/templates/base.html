@@ -1,11 +1,24 @@
 {% extends "market_ingestion/layouts/app_shell.html" %}
 
-{% block page_title %}{% block title %}{{ APP_NAME }}{% endblock %}{% endblock %}
-{% block page_title_text %}{% block title_heading %}{{ APP_NAME }}{% endblock %}{% endblock %}
-{% block page_subtitle %}{% block subtitle %}Multi-source market data integration workspace.{% endblock %}{% endblock %}
-
-{% block app_content %}
-    {% block content %}{% endblock %}
+{% block page_title %}
+  {% block title %}{{ APP_NAME }}{% endblock %}
 {% endblock %}
 
+{% block page_title_text %}
+  {% block title_heading %}{{ APP_NAME }}{% endblock %}
+{% endblock %}
+
+{% block page_subtitle %}
+  {% block subtitle %}Operational market data workspace for analytics, API access, and source inspection.{% endblock %}
+{% endblock %}
+
+{% block page_actions %}{% endblock %}
+
+{% block app_content %}
+  <section class="db-page-section">
+    {% block content %}{% endblock %}
+  </section>
+{% endblock %}
+
+{% block extra_head %}{% endblock %}
 {% block extra_js %}{% endblock %}

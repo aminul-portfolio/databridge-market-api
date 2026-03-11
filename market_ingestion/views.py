@@ -1,7 +1,6 @@
 import base64
 import json
 from io import BytesIO
-from pathlib import Path
 
 import ccxt
 import ccxt.async_support as ccxt_async
@@ -12,13 +11,8 @@ import yfinance as yf
 from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render
-from django.utils import timezone
 
-from .models import OHLCV, TradeLog
-
-
-APP_DIR = Path(__file__).resolve().parent
-TRADING_JOURNAL_CSV = APP_DIR / "static" / "trading-journal.csv"
+from .models import IngestionRun, MarketBar, MetricSnapshot, TradeJournalEntry
 
 
 def _to_pretty_json(data):
@@ -32,17 +26,31 @@ def _normalize_dataframe_for_template(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
 
     for col in df.columns:
-        if pd.api.types.is_datetime64_any_dtype(df[col]) or pd.api.types.is_datetime64tz_dtype(df[col]):
+        if (
+            pd.api.types.is_datetime64_any_dtype(df[col])
+            or pd.api.types.is_datetime64tz_dtype(df[col])
+        ):
             df[col] = df[col].astype(str)
 
     return df
 
 
-def _fetch_btc_yfinance_history(limit: int = 50) -> pd.DataFrame:
+def _safe_close_exchange(exchange) -> None:
+    close_method = getattr(exchange, "close", None)
+    if callable(close_method):
+        close_method()
+
+
+def _fetch_btc_yfinance_history(limit: int = 50, period: str = "7d", interval: str = "1h") -> pd.DataFrame:
     ticker = yf.Ticker("BTC-USD")
-    hist = ticker.history(period="7d", interval="1h").reset_index()
+    hist = ticker.history(period=period, interval=interval).reset_index()
     hist = _normalize_dataframe_for_template(hist)
     return hist.tail(limit)
+
+
+def _fetch_raw_btc_yfinance_history(period: str = "7d", interval: str = "1h") -> pd.DataFrame:
+    ticker = yf.Ticker("BTC-USD")
+    return ticker.history(period=period, interval=interval).reset_index()
 
 
 def _fetch_btc_ccxt_ticker() -> dict:
@@ -50,9 +58,7 @@ def _fetch_btc_ccxt_ticker() -> dict:
     try:
         return exchange.fetch_ticker("BTC/USDT")
     finally:
-        close_method = getattr(exchange, "close", None)
-        if callable(close_method):
-            close_method()
+        _safe_close_exchange(exchange)
 
 
 def _fetch_eurusd_twelvedata(outputsize: int = 50) -> dict:
@@ -112,11 +118,6 @@ def _twelvedata_to_records(data_td: dict) -> list[dict]:
     return df_td.to_dict(orient="records")
 
 
-# Home dashboard view
-from django.shortcuts import render
-from .models import IngestionRun, MarketBar, MetricSnapshot, TradeJournalEntry
-
-
 def home(request):
     latest_run = IngestionRun.objects.order_by("-id").first()
     latest_successful_run = IngestionRun.objects.filter(status="success").order_by("-id").first()
@@ -135,7 +136,6 @@ def home(request):
     return render(request, "home.html", context)
 
 
-# BTC yfinance JSON
 def btc_yfinance(request):
     try:
         data = _fetch_btc_yfinance_history(limit=50).to_dict(orient="records")
@@ -153,7 +153,6 @@ def btc_yfinance(request):
     )
 
 
-# BTC yfinance table
 def btc_yfinance_page(request):
     try:
         data = _fetch_btc_yfinance_history(limit=50).to_dict(orient="records")
@@ -170,7 +169,6 @@ def btc_yfinance_page(request):
     )
 
 
-# BTC ccxt JSON
 def btc_ccxt(request):
     try:
         ticker = _fetch_btc_ccxt_ticker()
@@ -188,7 +186,6 @@ def btc_ccxt(request):
     )
 
 
-# BTC ccxt table
 def btc_ccxt_page(request):
     try:
         ticker = _fetch_btc_ccxt_ticker()
@@ -206,7 +203,6 @@ def btc_ccxt_page(request):
     )
 
 
-# EUR/USD TwelveData table
 def eurusd_twelvedata_page(request):
     data_td = _fetch_eurusd_twelvedata(outputsize=50)
     eurusd_data = _twelvedata_to_records(data_td)
@@ -221,7 +217,6 @@ def eurusd_twelvedata_page(request):
     )
 
 
-# EUR/USD TwelveData JSON
 def eurusd_twelvedata_json(request):
     data_td = _fetch_eurusd_twelvedata(outputsize=50)
 
@@ -235,7 +230,6 @@ def eurusd_twelvedata_json(request):
     )
 
 
-# BTC yfinance info
 def btc_yfinance_info(request):
     try:
         ticker = yf.Ticker("BTC-USD")
@@ -259,40 +253,75 @@ def btc_yfinance_info(request):
     )
 
 
-# BTC yfinance compare with trading journal
 def btc_yfinance_compare(request):
-    if not TRADING_JOURNAL_CSV.exists():
-        return render(
-            request,
-            "table.html",
-            {
-                "title": "Trade Log Comparison",
-                "data": [{"error": f"Trading journal not found: {TRADING_JOURNAL_CSV}"}],
-            },
+    try:
+        journal_qs = (
+            TradeJournalEntry.objects.filter(
+                symbol__icontains="BTC",
+                opened_at__isnull=False,
+            )
+            .order_by("opened_at", "id")
+            .values(
+                "symbol",
+                "side",
+                "opened_at",
+                "closed_at",
+                "open_price",
+                "close_price",
+                "size",
+                "pnl",
+                "source_file",
+                "row_number",
+                "notes",
+            )
         )
 
-    try:
-        trades = pd.read_csv(TRADING_JOURNAL_CSV)
-        trades["Open_dt"] = pd.to_datetime(trades["Open"], errors="coerce")
+        journal_rows = list(journal_qs)
 
-        hist = yf.Ticker("BTC-USD").history(period="7d", interval="1h").reset_index()
-        hist["Datetime"] = pd.to_datetime(hist["Datetime"], errors="coerce")
+        if not journal_rows:
+            return render(
+                request,
+                "table.html",
+                {
+                    "title": "Trade Log Comparison",
+                    "data": [{"info": "No BTC trade journal entries available for comparison."}],
+                },
+            )
 
-        if trades["Open_dt"].dt.tz is None:
-            trades["Open_dt"] = trades["Open_dt"].dt.tz_localize("UTC")
+        trades = pd.DataFrame(journal_rows)
+
+        trades["opened_at"] = pd.to_datetime(trades["opened_at"], utc=True, errors="coerce")
+        trades["closed_at"] = pd.to_datetime(trades["closed_at"], utc=True, errors="coerce")
+
+        numeric_cols = ["open_price", "close_price", "size", "pnl"]
+        for col in numeric_cols:
+            if col in trades.columns:
+                trades[col] = pd.to_numeric(trades[col], errors="coerce")
+
+        trades = trades.dropna(subset=["opened_at"]).sort_values("opened_at")
+
+        hist = _fetch_raw_btc_yfinance_history(period="7d", interval="1h")
+
+        datetime_col = "Datetime" if "Datetime" in hist.columns else "Date"
+        hist[datetime_col] = pd.to_datetime(hist[datetime_col], utc=True, errors="coerce")
+        hist = hist.dropna(subset=[datetime_col]).sort_values(datetime_col)
 
         merged = pd.merge_asof(
-            trades.sort_values("Open_dt"),
-            hist.sort_values("Datetime"),
-            left_on="Open_dt",
-            right_on="Datetime",
+            trades,
+            hist,
+            left_on="opened_at",
+            right_on=datetime_col,
             direction="nearest",
         )
 
+        if "Close" in merged.columns and "open_price" in merged.columns:
+            merged["market_vs_trade_open_diff"] = merged["Close"] - merged["open_price"]
+
         merged = _normalize_dataframe_for_template(merged)
         data = merged.to_dict(orient="records")
+
     except Exception as exc:
-        data = [{"error": f"Failed to compare trade log with BTC data: {exc}"}]
+        data = [{"error": f"Failed to compare trade journal with BTC data: {exc}"}]
 
     return render(
         request,
@@ -304,11 +333,9 @@ def btc_yfinance_compare(request):
     )
 
 
-# BTC yfinance Matplotlib chart
 def btc_yfinance_plot(request):
     try:
-        ticker = yf.Ticker("BTC-USD")
-        hist = ticker.history(period="7d", interval="1h")
+        hist = yf.Ticker("BTC-USD").history(period="7d", interval="1h")
 
         plt.figure(figsize=(10, 5))
         plt.plot(hist.index, hist["Close"], marker="o", linestyle="-")
@@ -345,8 +372,12 @@ def btc_yfinance_plot(request):
     )
 
 
-# ETH OHLCV
+# Legacy / non-primary demo views kept in code for reference,
+# but intentionally excluded from the public demo namespace
+# and recruiter-facing navigation.
+
 def eth_ohlcv(request):
+    exchange = None
     try:
         exchange = ccxt.binance({"enableRateLimit": True})
         ohlcv = exchange.fetch_ohlcv("ETH/USDT", "1h", limit=50)
@@ -357,11 +388,8 @@ def eth_ohlcv(request):
     except Exception as exc:
         data = [{"error": f"Failed to fetch ETH OHLCV data: {exc}"}]
     finally:
-        close_method = locals().get("exchange", None)
-        if close_method is not None:
-            method = getattr(exchange, "close", None)
-            if callable(method):
-                method()
+        if exchange is not None:
+            _safe_close_exchange(exchange)
 
     return render(
         request,
@@ -373,8 +401,8 @@ def eth_ohlcv(request):
     )
 
 
-# ETH SMA backtest
 def eth_backtest(request):
+    exchange = None
     try:
         exchange = ccxt.binance({"enableRateLimit": True})
         ohlcv = exchange.fetch_ohlcv("ETH/USDT", "1h", limit=200)
@@ -388,11 +416,8 @@ def eth_backtest(request):
     except Exception as exc:
         data = [{"error": f"Failed to run ETH SMA backtest: {exc}"}]
     finally:
-        close_method = locals().get("exchange", None)
-        if close_method is not None:
-            method = getattr(exchange, "close", None)
-            if callable(method):
-                method()
+        if exchange is not None:
+            _safe_close_exchange(exchange)
 
     return render(
         request,
@@ -404,7 +429,6 @@ def eth_backtest(request):
     )
 
 
-# BTC volatility JSON
 def btc_volatility(request):
     try:
         tickers = yf.download(
@@ -430,7 +454,6 @@ def btc_volatility(request):
         )
 
 
-# Async ccxt ticker view
 async def ccxt_async_ticker(request):
     symbol = request.GET.get("symbol", "BTC/USDT")
     exchange = ccxt_async.binance({"enableRateLimit": True})
@@ -445,3 +468,16 @@ async def ccxt_async_ticker(request):
         )
     finally:
         await exchange.close()
+
+def public_landing(request):
+    context = {
+        "total_runs": IngestionRun.objects.count(),
+        "total_bars": MarketBar.objects.count(),
+        "total_snapshots": MetricSnapshot.objects.count(),
+        "total_journal_entries": TradeJournalEntry.objects.count(),
+        "latest_run": IngestionRun.objects.order_by("-id").first(),
+        "latest_snapshot": MetricSnapshot.objects.order_by("-id").first(),
+        "streamlit_url": getattr(settings, "STREAMLIT_URL", ""),
+        "github_url": "https://github.com/aminul-portfolio/databridge-market-api",
+    }
+    return render(request, "public_landing.html", context)

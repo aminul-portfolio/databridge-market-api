@@ -1,13 +1,19 @@
 <header class="db-topbar">
-    <div class="db-topbar-left">
-        <span class="db-badge">{{ APP_ENV|upper }}</span>
-        <span class="db-topbar-text">DataBridge Market API</span>
+  <div class="db-topbar-left">
+    <div class="db-topbar-context">
+      <span class="db-badge">{{ APP_ENV|upper }}</span>
+      <div class="db-topbar-copy">
+        <span class="db-topbar-title">DataBridge Market API</span>
+        <span class="db-topbar-text">Operational analytics, API access, and platform monitoring</span>
+      </div>
     </div>
+  </div>
 
-    <div class="db-topbar-right">
-        <a class="db-topbar-link" href="{% url 'home' %}">Home</a>
-        <a class="db-topbar-link" href="{% url 'ops:ingestion_runs' %}">Operations</a>
-        <a class="db-topbar-link" href="/admin/">Admin</a>
-        <a class="db-topbar-link" href="{{ STREAMLIT_URL }}" target="_blank" rel="noreferrer">Streamlit</a>
-    </div>
+  <div class="db-topbar-right">
+    {% if STREAMLIT_URL %}
+    <a class="db-topbar-link db-topbar-link--button" href="{{ STREAMLIT_URL }}" target="_blank" rel="noreferrer">
+      Open Streamlit
+    </a>
+    {% endif %}
+  </div>
 </header>

@@ -9,26 +9,53 @@
 {% endblock %}
 
 {% block content %}
-<div class="db-panel">
-  <h2 class="mb-3">{{ title }}</h2>
+<section class="meta-shell">
+  <div class="meta-card">
+    <div class="meta-header">
+      <div>
+        <p class="meta-kicker">Market Reference</p>
+        <h2 class="meta-title">{{ title }}</h2>
+        <p class="meta-subtitle">Structured metadata view for inspection, validation, and portfolio-ready presentation.</p>
+      </div>
 
-  <ul class="list-group mb-3">
-    {% for k, v in info.items %}
-    <li class="list-group-item d-flex justify-content-between">
-      <strong>{{ k }}</strong>
-      <span>{{ v }}</span>
-    </li>
-    {% empty %}
-    <li class="list-group-item">No information available.</li>
-    {% endfor %}
-  </ul>
+      <div class="meta-badge-row">
+        <span class="meta-badge">Read-only</span>
+        <span class="meta-badge">Reference view</span>
+      </div>
+    </div>
 
-  <button class="btn btn-outline-secondary btn-sm mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#fullInfo" aria-expanded="false" aria-controls="fullInfo">
-    Show Full JSON
-  </button>
+    <div class="meta-grid">
+      {% for k, v in info.items %}
+      <div class="meta-row">
+        <div class="meta-key">{{ k }}</div>
+        <div class="meta-value">{{ v|default:"—" }}</div>
+      </div>
+      {% empty %}
+      <div class="meta-empty-card">
+        <span class="meta-empty-title">No information available</span>
+        <span class="meta-empty-copy">This source did not return any reference metadata for display.</span>
+      </div>
+      {% endfor %}
+    </div>
 
-  <div class="collapse" id="fullInfo">
-    <pre>{{ info|safe }}</pre>
+    <div class="meta-json-panel">
+      <button
+        class="meta-json-toggle"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#fullInfo"
+        aria-expanded="false"
+        aria-controls="fullInfo"
+      >
+        Show Full JSON [JavaScript Object Notation]
+      </button>
+
+      <div class="collapse" id="fullInfo">
+        <div class="meta-json-wrap">
+          <pre class="meta-json-pre">{{ info|safe }}</pre>
+        </div>
+      </div>
+    </div>
   </div>
-</div>
+</section>
 {% endblock %}

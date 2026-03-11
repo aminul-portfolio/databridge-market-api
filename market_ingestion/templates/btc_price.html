@@ -2,18 +2,62 @@
 
 {% block title %}BTC/USD Live Price{% endblock %}
 {% block title_heading %}BTC/USD Live Price{% endblock %}
-{% block subtitle %}Single-price monitor view for the latest BTC/USD value.{% endblock %}
+{% block subtitle %}Single-price monitor view for the latest BTC/USD [Bitcoin / US Dollar] value.{% endblock %}
 
 {% block page_actions %}
 <a href="{% url 'home' %}" class="btn btn-outline-primary">Back to Dashboard</a>
+<a href="{% url 'demo:btc_yfinance' %}" class="btn btn-outline-primary" target="_blank" rel="noreferrer">Open JSON Feed</a>
 {% endblock %}
 
 {% block content %}
-<div class="db-panel">
-  <h2 class="mb-3">BTC/USD Live Price</h2>
-  <div class="display-4 fw-bold mb-2">${{ price }}</div>
-  <p class="db-muted mb-0">This page refreshes automatically every 60 seconds.</p>
-</div>
+<section class="live-price-shell">
+  <div class="live-price-card">
+    <div class="live-price-header">
+      <div>
+        <p class="live-price-kicker">Live Market Monitor</p>
+        <h2 class="live-price-title">BTC/USD Spot Price</h2>
+        <p class="live-price-subtitle">Focused monitor for the latest Bitcoin market value with automatic refresh and dashboard-ready presentation.</p>
+      </div>
+
+      <div class="live-price-badge-row">
+        <span class="live-price-badge">Auto refresh: 60s</span>
+        <span class="live-price-badge">Symbol: BTC/USD</span>
+      </div>
+    </div>
+
+    <div class="live-price-main">
+      <div class="live-price-value-wrap">
+        {% if price %}
+          <div class="live-price-currency">$</div>
+          <div class="live-price-value">{{ price }}</div>
+        {% else %}
+          <div class="live-price-empty">Price unavailable</div>
+        {% endif %}
+      </div>
+
+      <div class="live-price-side">
+        <div class="live-price-mini-card">
+          <p class="live-price-mini-label">Monitor Type</p>
+          <p class="live-price-mini-value">Single-asset view</p>
+        </div>
+
+        <div class="live-price-mini-card">
+          <p class="live-price-mini-label">Update Behaviour</p>
+          <p class="live-price-mini-value">Automatic page refresh every 60 seconds</p>
+        </div>
+
+        <div class="live-price-mini-card">
+          <p class="live-price-mini-label">Use Case</p>
+          <p class="live-price-mini-value">Quick portfolio check, live demo, and lightweight market preview</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="live-price-footer">
+      <span class="live-price-footnote">This view is optimized for fast read access and periodic refresh, rather than full chart analysis.</span>
+    </div>
+  </div>
+</section>
 {% endblock %}
 
 {% block extra_js %}

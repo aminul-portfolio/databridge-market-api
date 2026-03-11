@@ -4,8 +4,13 @@
 {% block title_heading %}{{ page_title }}{% endblock %}
 {% block subtitle %}Operational view of normalized market bars.{% endblock %}
 
+{% block page_actions %}
+<a href="{% url 'ops:dashboard' %}" class="btn btn-outline-primary">Ops Dashboard</a>
+<a href="{% url 'api_ops:reference' %}" class="btn btn-outline-primary">API Reference</a>
+<a href="{% url 'api_ops:bars' %}" class="btn btn-outline-primary" target="_blank" rel="noreferrer">Open Bars API</a>
+{% endblock %}
+
 {% block content %}
-{% include "market_ingestion/ops/_ops_page_styles.html" %}
 {% include "market_ingestion/ops/_ops_tabs.html" %}
 {% include "market_ingestion/ops/_ops_api_links.html" %}
 
@@ -53,10 +58,12 @@
     Filtered results
     <strong>{{ page_obj.paginator.count }}</strong>
   </div>
+
   <div class="ops-stat-chip">
     Total bars
     <strong>{{ summary.total_bars }}</strong>
   </div>
+
   <div class="ops-stat-chip">
     Latest bar
     <strong>
@@ -67,6 +74,7 @@
       {% endif %}
     </strong>
   </div>
+
   <div class="ops-stat-chip">
     Latest symbol
     <strong>
@@ -100,38 +108,37 @@
       <tbody>
         {% for row in rows %}
         <tr>
-            <td>
-                <a href="{% url 'api_ops:bar_detail' row.id %}" class="ops-id-link" target="_blank" rel="noreferrer">
-                    {{ row.id }}
-                </a>
-            </td>
-            <td>{{ row.source }}</td>
-            <td>{{ row.symbol }}</td>
-            <td>{{ row.timeframe }}</td>
-            <td>{{ row.bar_time }}</td>
-            <td>{{ row.open }}</td>
-            <td>{{ row.high }}</td>
-            <td>{{ row.low }}</td>
-            <td>{{ row.close }}</td>
-            <td>{{ row.volume }}</td>
-            <td>
-                {% if row.run_id %}
-                <a href="{% url 'api_ops:run_detail' row.run_id %}" class="ops-id-link" target="_blank"
-                   rel="noreferrer">
-                    {{ row.run_id }}
-                </a>
-                {% else %}
-                —
-                {% endif %}
-            </td>
+          <td>
+            <a href="{% url 'api_ops:bar_detail' row.id %}" class="ops-id-link" target="_blank" rel="noreferrer">
+              {{ row.id }}
+            </a>
+          </td>
+          <td><span class="ops-source-tag">{{ row.source }}</span></td>
+          <td class="ops-mono">{{ row.symbol }}</td>
+          <td class="ops-mono">{{ row.timeframe }}</td>
+          <td class="ops-time">{{ row.bar_time|date:"Y-m-d H:i" }}</td>
+          <td class="ops-num">{{ row.open }}</td>
+          <td class="ops-num">{{ row.high }}</td>
+          <td class="ops-num">{{ row.low }}</td>
+          <td class="ops-num">{{ row.close }}</td>
+          <td class="ops-num">{{ row.volume }}</td>
+          <td>
+            {% if row.run_id %}
+              <a href="{% url 'api_ops:run_detail' row.run_id %}" class="ops-id-link" target="_blank" rel="noreferrer">
+                {{ row.run_id }}
+              </a>
+            {% else %}
+              —
+            {% endif %}
+          </td>
         </tr>
         {% empty %}
-          <tr class="ops-empty-row">
-            <td colspan="11">
-              <span class="ops-empty-title">No market bars found</span>
-              Run a market ingestion command or adjust the filters to populate this table.
-            </td>
-          </tr>
+        <tr class="ops-empty-row">
+          <td colspan="11">
+            <span class="ops-empty-title">No market bars found</span>
+            <span class="ops-empty-copy">Run a market ingestion command or adjust the filters to populate this table.</span>
+          </td>
+        </tr>
         {% endfor %}
       </tbody>
     </table>
@@ -139,19 +146,20 @@
 </section>
 
 {% if page_obj.paginator.num_pages > 1 %}
-  <div class="ops-pagination">
-    <div class="ops-pagination-links">
-      {% if page_obj.has_previous %}
-        <a class="ops-page-pill" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>
-      {% endif %}
-      {% if page_obj.has_next %}
-        <a class="ops-page-pill" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a>
-      {% endif %}
-    </div>
+<div class="ops-pagination">
+  <div class="ops-pagination-links">
+    {% if page_obj.has_previous %}
+      <a class="ops-page-pill" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>
+    {% endif %}
 
-    <div class="ops-page-status">
-      Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-    </div>
+    {% if page_obj.has_next %}
+      <a class="ops-page-pill" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+    {% endif %}
   </div>
+
+  <div class="ops-page-status">
+    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+  </div>
+</div>
 {% endif %}
 {% endblock %}

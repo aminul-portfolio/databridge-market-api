@@ -9,8 +9,35 @@
 {% endblock %}
 
 {% block content %}
-<div class="db-panel text-center">
-  <h2 class="mb-3">{{ title }}</h2>
-  <img src="data:image/png;base64,{{ chart_base64 }}" class="img-fluid rounded border" alt="{{ title }}">
-</div>
+<section class="chart-view-shell">
+  <div class="chart-view-card">
+    <div class="chart-view-header">
+      <div>
+        <p class="chart-view-kicker">Visual Monitor</p>
+        <h2 class="chart-view-title">{{ title }}</h2>
+        <p class="chart-view-subtitle">Focused chart view for lightweight market inspection, trend review, and portfolio-ready presentation.</p>
+      </div>
+
+      <div class="chart-view-badge-row">
+        <span class="chart-view-badge">Chart Preview</span>
+        <span class="chart-view-badge">Read-only</span>
+      </div>
+    </div>
+
+    {% if chart_base64 %}
+    <div class="chart-view-frame">
+      <img
+        src="data:image/png;base64,{{ chart_base64 }}"
+        class="chart-view-image"
+        alt="{{ title }}"
+      >
+    </div>
+    {% else %}
+    <div class="chart-view-empty">
+      <span class="chart-view-empty-title">Chart unavailable</span>
+      <span class="chart-view-empty-copy">No chart image was generated for this view.</span>
+    </div>
+    {% endif %}
+  </div>
+</section>
 {% endblock %}

@@ -1,525 +1,326 @@
 {% extends "base.html" %}
 
 {% block title %}Dashboard{% endblock %}
-{% block title_heading %}DataBridge Market API{% endblock %}
-{% block subtitle %}Operational overview of ingestion activity, stored market data, computed metrics, and portfolio-facing API access.{% endblock %}
+{% block title_heading %}Executive Dashboard{% endblock %}
+{% block page_kicker %}Market Data Platform{% endblock %}
+{% block subtitle %}Operational overview of ingestion activity, stored market data, computed metrics, controlled source previews, public portfolio presentation, and portfolio-facing API access.{% endblock %}
 
 {% block page_actions %}
+<a href="{% url 'api_ops:reference' %}" class="btn btn-outline-primary">API Reference</a>
+<a href="{% url 'public_landing' %}" class="btn btn-outline-primary">Open Portfolio Landing</a>
 {% if STREAMLIT_URL %}
 <a href="{{ STREAMLIT_URL }}" target="_blank" rel="noreferrer" class="btn btn-primary">Open Streamlit</a>
 {% endif %}
 {% endblock %}
 
 {% block content %}
-<style>
-  .dash-stat-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.25rem;
-  }
+<div class="dash-shell">
+  <section class="dash-hero">
+    <div class="dash-hero-grid">
+      <div>
+        <p class="dash-hero-kicker">Portfolio-Ready Data Product</p>
+        <h2 class="dash-hero-title">Operational market-data platform with ETL, snapshots, APIs, and controlled source previews.</h2>
+        <p class="dash-hero-copy">
+          DataBridge Market API is positioned as a Python and Django data product that ingests market data, stores normalized records,
+          computes reusable metrics, and exposes operational, API-facing, and portfolio-facing surfaces for monitoring, integration,
+          and FinTech-style presentation.
+        </p>
 
-  .dash-stat-card {
-    padding: 1rem 1.1rem;
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    border-radius: 18px;
-    background: #ffffff;
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
-  }
-
-  .dash-stat-label {
-    margin: 0 0 0.45rem 0;
-    font-size: 0.82rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: #64748b;
-  }
-
-  .dash-stat-value {
-    margin: 0;
-    font-size: 2rem;
-    line-height: 1;
-    font-weight: 800;
-    color: #0f172a;
-  }
-
-  .dash-panel {
-    padding: 1.1rem;
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    border-radius: 20px;
-    background: #ffffff;
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
-    margin-bottom: 1.25rem;
-  }
-
-  .dash-panel-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1rem;
-    flex-wrap: wrap;
-    margin-bottom: 1rem;
-  }
-
-  .dash-panel-kicker {
-    margin: 0 0 0.35rem 0;
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #6366f1;
-  }
-
-  .dash-panel-title {
-    margin: 0;
-    font-size: 1.2rem;
-    font-weight: 800;
-    color: #0f172a;
-  }
-
-  .dash-panel-subtitle {
-    margin: 0.35rem 0 0 0;
-    font-size: 0.93rem;
-    color: #64748b;
-  }
-
-  .dash-action-groups {
-    display: grid;
-    gap: 1rem;
-  }
-
-  .dash-action-group {
-    padding: 1rem;
-    border: 1px solid rgba(15, 23, 42, 0.06);
-    border-radius: 16px;
-    background: #f8fafc;
-  }
-
-  .dash-action-group-title {
-    margin: 0 0 0.25rem 0;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: #0f172a;
-  }
-
-  .dash-action-group-subtitle {
-    margin: 0 0 0.85rem 0;
-    font-size: 0.88rem;
-    color: #64748b;
-  }
-
-  .dash-action-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-  }
-
-  .dash-pill-link {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 38px;
-    padding: 0.7rem 0.95rem;
-    border-radius: 999px;
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    background: #ffffff;
-    color: #334155;
-    text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 600;
-    transition: all 0.18s ease;
-  }
-
-  .dash-pill-link:hover {
-    border-color: rgba(79, 70, 229, 0.22);
-    color: #4f46e5;
-    transform: translateY(-1px);
-  }
-
-  .dash-pill-link.is-primary {
-    background: #4f46e5;
-    border-color: #4f46e5;
-    color: #ffffff;
-    box-shadow: 0 8px 18px rgba(79, 70, 229, 0.18);
-  }
-
-  .dash-layout-grid {
-    display: grid;
-    grid-template-columns: 1.2fr 0.8fr;
-    gap: 1.25rem;
-    margin-bottom: 1.25rem;
-  }
-
-  .dash-table-card {
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    border-radius: 18px;
-    background: #ffffff;
-    overflow: hidden;
-  }
-
-  .dash-table-scroll {
-    overflow-x: auto;
-  }
-
-  .dash-data-table {
-    width: 100%;
-    min-width: 760px;
-    border-collapse: separate;
-    border-spacing: 0;
-  }
-
-  .dash-data-table thead th {
-    padding: 0.9rem 1rem;
-    background: #0f172a;
-    color: #ffffff;
-    font-size: 0.88rem;
-    font-weight: 700;
-    text-align: left;
-    white-space: nowrap;
-  }
-
-  .dash-data-table tbody td {
-    padding: 0.9rem 1rem;
-    font-size: 0.92rem;
-    color: #0f172a;
-    border-bottom: 1px solid #e5e7eb;
-    white-space: nowrap;
-    vertical-align: top;
-  }
-
-  .dash-data-table tbody tr:hover td {
-    background: #f8fafc;
-  }
-
-  .dash-data-table tbody tr:last-child td {
-    border-bottom: none;
-  }
-
-  .dash-empty-row td {
-    padding: 2rem 1rem;
-    text-align: center;
-    white-space: normal;
-    background: #fbfdff;
-  }
-
-  .dash-empty-title {
-    display: block;
-    margin-bottom: 0.35rem;
-    font-size: 1rem;
-    font-weight: 700;
-    color: #0f172a;
-  }
-
-  .dash-empty-copy {
-    color: #64748b;
-    font-size: 0.92rem;
-  }
-
-  .dash-keyvalue {
-    display: grid;
-    gap: 0.75rem;
-  }
-
-  .dash-kv-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 0.85rem 1rem;
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    border-radius: 14px;
-    background: #f8fafc;
-  }
-
-  .dash-kv-label {
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: #334155;
-  }
-
-  .dash-kv-value {
-    font-size: 0.92rem;
-    color: #0f172a;
-    text-align: right;
-    word-break: break-word;
-  }
-
-  .dash-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    min-height: 36px;
-    padding: 0.5rem 0.8rem;
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    border-radius: 999px;
-    background: #ffffff;
-    color: #475569;
-    font-size: 0.9rem;
-    font-weight: 600;
-  }
-
-  .dash-chip strong {
-    color: #0f172a;
-  }
-
-  .dash-status {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.28rem 0.65rem;
-    border-radius: 999px;
-    font-size: 0.78rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-
-  .dash-status-success {
-    background: #dcfce7;
-    color: #166534;
-  }
-
-  .dash-status-partial {
-    background: #fef3c7;
-    color: #92400e;
-  }
-
-  .dash-status-failed {
-    background: #fee2e2;
-    color: #991b1b;
-  }
-
-  .dash-status-started {
-    background: #e0e7ff;
-    color: #3730a3;
-  }
-
-  @media (max-width: 1100px) {
-    .dash-stat-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .dash-layout-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  @media (max-width: 640px) {
-    .dash-stat-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .dash-pill-link {
-      width: 100%;
-      justify-content: center;
-    }
-  }
-</style>
-
-<section class="dash-stat-grid">
-  <div class="dash-stat-card">
-    <p class="dash-stat-label">Ingestion Runs</p>
-    <p class="dash-stat-value">{{ total_runs }}</p>
-  </div>
-
-  <div class="dash-stat-card">
-    <p class="dash-stat-label">Stored Market Bars</p>
-    <p class="dash-stat-value">{{ total_bars }}</p>
-  </div>
-
-  <div class="dash-stat-card">
-    <p class="dash-stat-label">Metric Snapshots</p>
-    <p class="dash-stat-value">{{ total_snapshots }}</p>
-  </div>
-
-  <div class="dash-stat-card">
-    <p class="dash-stat-label">Journal Entries</p>
-    <p class="dash-stat-value">{{ total_journal_entries }}</p>
-  </div>
-</section>
-
-<section class="dash-panel">
-  <div class="dash-panel-header">
-    <div>
-      <p class="dash-panel-kicker">Workspace Shortcuts</p>
-      <h2 class="dash-panel-title">Quick Access</h2>
-      <p class="dash-panel-subtitle">Jump into operational monitoring, API inspection, and supporting dashboard surfaces.</p>
-    </div>
-  </div>
-
-  <div class="dash-action-groups">
-    <div class="dash-action-group">
-      <h3 class="dash-action-group-title">Operations & Monitoring</h3>
-      <p class="dash-action-group-subtitle">Review ETL runs, computed snapshots, and normalized market bars stored in the database.</p>
-
-      <div class="dash-action-row">
-        <a href="{% url 'ops:ingestion_runs' %}" class="dash-pill-link">Ingestion Runs</a>
-        <a href="{% url 'ops:metric_snapshots' %}" class="dash-pill-link">Metric Snapshots</a>
-        <a href="{% url 'ops:market_bars' %}" class="dash-pill-link">Market Bars</a>
-        {% if STREAMLIT_URL %}
-        <a href="{{ STREAMLIT_URL }}" target="_blank" rel="noreferrer" class="dash-pill-link is-primary">Streamlit Dashboard</a>
-        {% endif %}
-      </div>
-    </div>
-
-    <div class="dash-action-group">
-      <h3 class="dash-action-group-title">API Access</h3>
-      <p class="dash-action-group-subtitle">Use JSON endpoints and filter examples for review, integration, and portfolio demonstration.</p>
-
-      <div class="dash-action-row" style="margin-bottom: 0.75rem;">
-        <a href="{% url 'api_ops:reference' %}" class="dash-pill-link">API Reference</a>
-        <a href="{% url 'api_ops:runs' %}" class="dash-pill-link">Runs API</a>
-        <a href="{% url 'api_ops:snapshots' %}" class="dash-pill-link">Snapshots API</a>
-        <a href="{% url 'api_ops:bars' %}" class="dash-pill-link">Bars API</a>
+        <div class="dash-hero-badges">
+          <span class="dash-badge">Python & Django</span>
+          <span class="dash-badge">ETL Workflows</span>
+          <span class="dash-badge">KPI Snapshots</span>
+          <span class="dash-badge">Read-only APIs</span>
+          <span class="dash-badge">FinTech / BI Positioning</span>
+          <span class="dash-badge">Public Portfolio Landing</span>
+        </div>
       </div>
 
-      <div class="dash-action-row">
-        <a href="{% url 'api_ops:runs' %}?status=success" class="dash-pill-link">Runs: status=success</a>
-        <a href="{% url 'api_ops:runs' %}?source=yfinance" class="dash-pill-link">Runs: source=yfinance</a>
-        <a href="{% url 'api_ops:snapshots' %}?symbol=BTC-USD" class="dash-pill-link">Snapshots: symbol=BTC-USD</a>
-        <a href="{% url 'api_ops:bars' %}?source=yfinance" class="dash-pill-link">Bars: source=yfinance</a>
-        <a href="{% url 'api_ops:bars' %}?symbol=BTC-USD" class="dash-pill-link">Bars: symbol=BTC-USD</a>
-        <a href="{% url 'api_ops:bars' %}?timeframe=1h" class="dash-pill-link">Bars: timeframe=1h</a>
+      <div class="dash-hero-summary">
+        <div class="dash-mini-card">
+          <p class="dash-mini-label">Latest successful run</p>
+          <p class="dash-mini-value">
+            {% if latest_successful_run %}
+              {{ latest_successful_run.source }} / {{ latest_successful_run.symbol }} / {{ latest_successful_run.timeframe|default:"—" }}
+            {% else %}
+              No successful run recorded yet
+            {% endif %}
+          </p>
+          <p class="dash-mini-subtext">
+            {% if latest_successful_run %}
+              Completed {{ latest_successful_run.finished_at|date:"Y-m-d H:i" }}
+            {% else %}
+              Run ingestion commands to populate the platform.
+            {% endif %}
+          </p>
+        </div>
+
+        <div class="dash-mini-card">
+          <p class="dash-mini-label">Latest snapshot signal</p>
+          <p class="dash-mini-value">
+            {% if latest_snapshot %}
+              {{ latest_snapshot.crossover_signal|default:"—" }}
+            {% else %}
+              No snapshot available
+            {% endif %}
+          </p>
+          <p class="dash-mini-subtext">
+            {% if latest_snapshot %}
+              {{ latest_snapshot.symbol }} / {{ latest_snapshot.timeframe }} / {{ latest_snapshot.snapshot_time|date:"Y-m-d H:i" }}
+            {% else %}
+              Compute metrics after ingestion to generate analytical state.
+            {% endif %}
+          </p>
+        </div>
+
+        <div class="dash-mini-card">
+          <p class="dash-mini-label">Access surface</p>
+          <p class="dash-mini-value">Operations, APIs, portfolio, and source previews</p>
+          <p class="dash-mini-subtext">Structured to support monitoring, recruiter review, and integration-style inspection.</p>
+        </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="dash-layout-grid">
-  <article class="dash-panel">
+  <section class="dash-stat-grid">
+    <div class="dash-stat-card">
+      <p class="dash-stat-label">Ingestion Runs</p>
+      <p class="dash-stat-value">{{ total_runs }}</p>
+      <p class="dash-stat-foot">Tracked ETL executions across configured sources.</p>
+    </div>
+
+    <div class="dash-stat-card">
+      <p class="dash-stat-label">Stored Market Bars</p>
+      <p class="dash-stat-value">{{ total_bars }}</p>
+      <p class="dash-stat-foot">Normalized OHLCV records available for downstream use.</p>
+    </div>
+
+    <div class="dash-stat-card">
+      <p class="dash-stat-label">Metric Snapshots</p>
+      <p class="dash-stat-value">{{ total_snapshots }}</p>
+      <p class="dash-stat-foot">Computed analytical outputs for dashboard and API delivery.</p>
+    </div>
+
+    <div class="dash-stat-card">
+      <p class="dash-stat-label">Journal Entries</p>
+      <p class="dash-stat-value">{{ total_journal_entries }}</p>
+      <p class="dash-stat-foot">Imported trade-journal records for portfolio analytics context.</p>
+    </div>
+  </section>
+
+  <section class="dash-panel">
     <div class="dash-panel-header">
       <div>
-        <p class="dash-panel-kicker">Recent Activity</p>
-        <h2 class="dash-panel-title">Latest Ingestion Runs</h2>
-        <p class="dash-panel-subtitle">Most recent ETL execution history across configured data sources.</p>
-      </div>
-
-      <div class="dash-chip">
-        Showing
-        <strong>{{ recent_runs|length }}</strong>
+        <p class="dash-panel-kicker">Workspace Shortcuts</p>
+        <h2 class="dash-panel-title">Product Surfaces</h2>
+        <p class="dash-panel-subtitle">
+          Navigate between operational monitoring, API inspection, public portfolio presentation,
+          and selected secondary proof pages without turning the main platform into a demo-first experience.
+        </p>
       </div>
     </div>
 
-    <div class="dash-table-card">
-      <div class="dash-table-scroll">
-        <table class="dash-data-table">
-          <thead>
-            <tr>
-              <th>Source</th>
-              <th>Symbol</th>
-              <th>Timeframe</th>
-              <th>Status</th>
-              <th>Inserted</th>
-              <th>Updated</th>
-              <th>Started</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for run in recent_runs %}
-            <tr>
-              <td>{{ run.source }}</td>
-              <td>{{ run.symbol }}</td>
-              <td>{{ run.timeframe|default:"-" }}</td>
-              <td>
-                <span class="dash-status dash-status-{{ run.status }}">
-                  {{ run.status }}
-                </span>
-              </td>
-              <td>{{ run.rows_inserted }}</td>
-              <td>{{ run.rows_updated }}</td>
-              <td>{{ run.started_at|date:"Y-m-d H:i" }}</td>
-            </tr>
-            {% empty %}
-            <tr class="dash-empty-row">
-              <td colspan="7">
-                <span class="dash-empty-title">No ingestion runs available</span>
-                <span class="dash-empty-copy">Run the ETL commands to populate operational data for review.</span>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+    <div class="dash-action-grid">
+      <div class="dash-action-group">
+        <h3 class="dash-action-group-title">Operations & Monitoring</h3>
+        <p class="dash-action-group-subtitle">
+          Review ingestion execution history, stored market bars, and analytical snapshots through the internal operations layer.
+        </p>
+
+        <div class="dash-action-row">
+          <a href="{% url 'ops:dashboard' %}" class="dash-pill-link">Ops Dashboard</a>
+          <a href="{% url 'ops:ingestion_runs' %}" class="dash-pill-link">Ingestion Runs</a>
+          <a href="{% url 'ops:metric_snapshots' %}" class="dash-pill-link">Metric Snapshots</a>
+          <a href="{% url 'ops:market_bars' %}" class="dash-pill-link">Market Bars</a>
+          {% if STREAMLIT_URL %}
+          <a href="{{ STREAMLIT_URL }}" target="_blank" rel="noreferrer" class="dash-pill-link is-primary">Streamlit Dashboard</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="dash-action-group">
+        <h3 class="dash-action-group-title">API Access</h3>
+        <p class="dash-action-group-subtitle">
+          Use read-only JSON [JavaScript Object Notation] endpoints for integration-style review, filtering examples, and recruiter-facing API evidence.
+        </p>
+
+        <div class="dash-action-row">
+          <a href="{% url 'api_ops:reference' %}" class="dash-pill-link">API Reference</a>
+          <a href="{% url 'api_ops:runs' %}" class="dash-pill-link" target="_blank" rel="noreferrer">Runs API</a>
+          <a href="{% url 'api_ops:snapshots' %}" class="dash-pill-link" target="_blank" rel="noreferrer">Snapshots API</a>
+          <a href="{% url 'api_ops:bars' %}" class="dash-pill-link" target="_blank" rel="noreferrer">Bars API</a>
+          <a href="{% url 'api_ops:journal' %}" class="dash-pill-link" target="_blank" rel="noreferrer">Journal API</a>
+        </div>
+
+        <div class="dash-action-row">
+          <a href="{% url 'api_ops:runs' %}?status=success" class="dash-pill-link" target="_blank" rel="noreferrer">Runs: status=success</a>
+          <a href="{% url 'api_ops:runs' %}?source=yfinance" class="dash-pill-link" target="_blank" rel="noreferrer">Runs: source=yfinance</a>
+          <a href="{% url 'api_ops:snapshots' %}?symbol=BTC-USD" class="dash-pill-link" target="_blank" rel="noreferrer">Snapshots: symbol=BTC-USD</a>
+          <a href="{% url 'api_ops:bars' %}?source=yfinance" class="dash-pill-link" target="_blank" rel="noreferrer">Bars: source=yfinance</a>
+          <a href="{% url 'api_ops:bars' %}?symbol=BTC-USD" class="dash-pill-link" target="_blank" rel="noreferrer">Bars: symbol=BTC-USD</a>
+          <a href="{% url 'api_ops:bars' %}?timeframe=1h" class="dash-pill-link" target="_blank" rel="noreferrer">Bars: timeframe=1h</a>
+          <a href="{% url 'api_ops:journal' %}?source_file=trading-journal.csv" class="dash-pill-link" target="_blank" rel="noreferrer">Journal: trading-journal.csv</a>
+        </div>
+      </div>
+
+      <div class="dash-action-group">
+        <h3 class="dash-action-group-title">Portfolio & Source Previews</h3>
+        <p class="dash-action-group-subtitle">
+          Public portfolio presentation plus controlled secondary proof pages for multi-provider connectivity,
+          market-data inspection, and trading analytics context.
+        </p>
+
+        <div class="dash-action-row">
+          <a href="{% url 'public_landing' %}" class="dash-pill-link is-primary">Portfolio Landing</a>
+          <a href="{% url 'demo:btc_yfinance_page' %}" class="dash-pill-link">BTC yfinance Table</a>
+          <a href="{% url 'demo:btc_yfinance' %}" class="dash-pill-link" target="_blank" rel="noreferrer">BTC yfinance JSON</a>
+          <a href="{% url 'demo:btc_yfinance_info' %}" class="dash-pill-link">BTC Market Info</a>
+          <a href="{% url 'demo:btc_ccxt_page' %}" class="dash-pill-link">BTC ccxt Table</a>
+          <a href="{% url 'demo:btc_ccxt' %}" class="dash-pill-link" target="_blank" rel="noreferrer">BTC ccxt JSON</a>
+          <a href="{% url 'demo:eurusd_twelvedata_page' %}" class="dash-pill-link">EUR/USD TwelveData</a>
+          <a href="{% url 'demo:eurusd_twelvedata_json' %}" class="dash-pill-link" target="_blank" rel="noreferrer">EUR/USD JSON</a>
+          <a href="{% url 'demo:btc_yfinance_compare' %}" class="dash-pill-link is-accent">Trade Comparison</a>
+          <a href="{% url 'demo:btc_yfinance_plot' %}" class="dash-pill-link">BTC Chart</a>
+        </div>
       </div>
     </div>
-  </article>
+  </section>
 
-  <article class="dash-panel">
-    <div class="dash-panel-header">
-      <div>
-        <p class="dash-panel-kicker">Operational Summary</p>
-        <h2 class="dash-panel-title">Latest Platform State</h2>
-        <p class="dash-panel-subtitle">Quick visibility into the latest successful run and most recent metric snapshot.</p>
-      </div>
-    </div>
+  <section class="dash-layout-grid">
+    <article class="dash-panel">
+      <div class="dash-panel-header">
+        <div>
+          <p class="dash-panel-kicker">Recent Activity</p>
+          <h2 class="dash-panel-title">Latest Ingestion Runs</h2>
+          <p class="dash-panel-subtitle">Most recent ETL execution history across configured data sources.</p>
+        </div>
 
-    <div class="dash-keyvalue">
-      <div class="dash-kv-row">
-        <span class="dash-kv-label">Latest Run</span>
-        <span class="dash-kv-value">
-          {% if latest_run %}
-            {{ latest_run.source }} / {{ latest_run.symbol }} / {{ latest_run.timeframe|default:"-" }}
-          {% else %}
-            -
-          {% endif %}
-        </span>
+        <div class="dash-chip">
+          Showing
+          <strong>{{ recent_runs|length }}</strong>
+        </div>
       </div>
 
-      <div class="dash-kv-row">
-        <span class="dash-kv-label">Latest Run Status</span>
-        <span class="dash-kv-value">
-          {% if latest_run %}
-            {{ latest_run.status }}
-          {% else %}
-            -
-          {% endif %}
-        </span>
+      <div class="dash-table-card">
+        <div class="dash-table-scroll">
+          <table class="dash-data-table">
+            <thead>
+              <tr>
+                <th>Source</th>
+                <th>Symbol</th>
+                <th>Timeframe</th>
+                <th>Status</th>
+                <th>Inserted</th>
+                <th>Updated</th>
+                <th>Started</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for run in recent_runs %}
+              <tr>
+                <td>{{ run.source }}</td>
+                <td>{{ run.symbol }}</td>
+                <td>{{ run.timeframe|default:"—" }}</td>
+                <td>
+                  <span class="dash-status dash-status-{{ run.status }}">
+                    {{ run.status }}
+                  </span>
+                </td>
+                <td>{{ run.rows_inserted }}</td>
+                <td>{{ run.rows_updated }}</td>
+                <td>{{ run.started_at|date:"Y-m-d H:i" }}</td>
+              </tr>
+              {% empty %}
+              <tr class="dash-empty-row">
+                <td colspan="7">
+                  <span class="dash-empty-title">No ingestion runs available</span>
+                  <span class="dash-empty-copy">Run the ETL commands to populate operational data for review.</span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </article>
+
+    <article class="dash-panel">
+      <div class="dash-panel-header">
+        <div>
+          <p class="dash-panel-kicker">Operational Summary</p>
+          <h2 class="dash-panel-title">Latest Platform State</h2>
+          <p class="dash-panel-subtitle">Quick visibility into the latest run, latest successful run, and most recent metric snapshot.</p>
+        </div>
       </div>
 
-      <div class="dash-kv-row">
-        <span class="dash-kv-label">Latest Run Started</span>
-        <span class="dash-kv-value">
-          {% if latest_run %}
-            {{ latest_run.started_at|date:"Y-m-d H:i" }}
-          {% else %}
-            -
-          {% endif %}
-        </span>
-      </div>
+      <div class="dash-keyvalue">
+        <div class="dash-kv-row">
+          <span class="dash-kv-label">Latest Run</span>
+          <span class="dash-kv-value">
+            {% if latest_run %}
+              {{ latest_run.source }} / {{ latest_run.symbol }} / {{ latest_run.timeframe|default:"—" }}
+            {% else %}
+              —
+            {% endif %}
+          </span>
+        </div>
 
-      <div class="dash-kv-row">
-        <span class="dash-kv-label">Last Successful Run</span>
-        <span class="dash-kv-value">
-          {% if latest_successful_run %}
-            {{ latest_successful_run.source }} / {{ latest_successful_run.symbol }} / {{ latest_successful_run.timeframe|default:"-" }}
-          {% else %}
-            -
-          {% endif %}
-        </span>
-      </div>
+        <div class="dash-kv-row">
+          <span class="dash-kv-label">Latest Run Status</span>
+          <span class="dash-kv-value">
+            {% if latest_run %}
+              <span class="dash-status dash-status-{{ latest_run.status }}">{{ latest_run.status }}</span>
+            {% else %}
+              —
+            {% endif %}
+          </span>
+        </div>
 
-      <div class="dash-kv-row">
-        <span class="dash-kv-label">Latest Snapshot</span>
-        <span class="dash-kv-value">
-          {% if latest_snapshot %}
-            {{ latest_snapshot.symbol }} / {{ latest_snapshot.timeframe }} / {{ latest_snapshot.snapshot_time|date:"Y-m-d H:i" }}
-          {% else %}
-            -
-          {% endif %}
-        </span>
-      </div>
+        <div class="dash-kv-row">
+          <span class="dash-kv-label">Latest Run Started</span>
+          <span class="dash-kv-value">
+            {% if latest_run %}
+              {{ latest_run.started_at|date:"Y-m-d H:i" }}
+            {% else %}
+              —
+            {% endif %}
+          </span>
+        </div>
 
-      <div class="dash-kv-row">
-        <span class="dash-kv-label">Latest Snapshot Signal</span>
-        <span class="dash-kv-value">
-          {% if latest_snapshot %}
-            {{ latest_snapshot.crossover_signal }}
-          {% else %}
-            -
-          {% endif %}
-        </span>
+        <div class="dash-kv-row">
+          <span class="dash-kv-label">Last Successful Run</span>
+          <span class="dash-kv-value">
+            {% if latest_successful_run %}
+              {{ latest_successful_run.source }} / {{ latest_successful_run.symbol }} / {{ latest_successful_run.timeframe|default:"—" }}
+            {% else %}
+              —
+            {% endif %}
+          </span>
+        </div>
+
+        <div class="dash-kv-row">
+          <span class="dash-kv-label">Latest Snapshot</span>
+          <span class="dash-kv-value">
+            {% if latest_snapshot %}
+              {{ latest_snapshot.symbol }} / {{ latest_snapshot.timeframe }} / {{ latest_snapshot.snapshot_time|date:"Y-m-d H:i" }}
+            {% else %}
+              —
+            {% endif %}
+          </span>
+        </div>
+
+        <div class="dash-kv-row">
+          <span class="dash-kv-label">Latest Snapshot Signal</span>
+          <span class="dash-kv-value">
+            {% if latest_snapshot %}
+              {{ latest_snapshot.crossover_signal|default:"—" }}
+            {% else %}
+              —
+            {% endif %}
+          </span>
+        </div>
       </div>
-    </div>
-  </article>
-</section>
+    </article>
+  </section>
+</div>
 {% endblock %}

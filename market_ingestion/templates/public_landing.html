@@ -1,0 +1,452 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="DataBridge Market API — production-minded Django data product for multi-source market data ingestion, analytics, and API delivery.">
+  <title>DataBridge Market API — Portfolio</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'market_ingestion/css/public_landing.css' %}">
+</head>
+<body>
+
+{# ── TICKER ──────────────────────────────────────────────────────────────── #}
+<div class="ticker-wrap" aria-hidden="true">
+  <div class="ticker-track">
+    <div class="ticker-item"><span class="sym">DATA SOURCES</span><span>yfinance · ccxt · TwelveData</span></div>
+    <div class="ticker-dot"></div>
+    <div class="ticker-item"><span class="sym">INGESTION RUNS</span><span>{{ total_runs }}</span></div>
+    <div class="ticker-dot"></div>
+    <div class="ticker-item"><span class="sym">MARKET BARS</span><span>{{ total_bars }}</span></div>
+    <div class="ticker-dot"></div>
+    <div class="ticker-item"><span class="sym">SNAPSHOTS</span><span>{{ total_snapshots }}</span></div>
+    <div class="ticker-dot"></div>
+    <div class="ticker-item"><span class="sym">JOURNAL ENTRIES</span><span>{{ total_journal_entries }}</span></div>
+    <div class="ticker-dot"></div>
+    <div class="ticker-item"><span class="sym">STATUS</span><span class="up">● OPERATIONAL</span></div>
+    <div class="ticker-dot"></div>
+    <div class="ticker-item"><span class="sym">API</span><span>Read-only ops endpoints</span></div>
+    <div class="ticker-dot"></div>
+    <div class="ticker-item"><span class="sym">PREVIEWS</span><span>9 controlled demo routes</span></div>
+    <div class="ticker-dot"></div>
+    {# duplicate for seamless loop #}
+    <div class="ticker-item"><span class="sym">DATA SOURCES</span><span>yfinance · ccxt · TwelveData</span></div>
+    <div class="ticker-dot"></div>
+    <div class="ticker-item"><span class="sym">INGESTION RUNS</span><span>{{ total_runs }}</span></div>
+    <div class="ticker-dot"></div>
+    <div class="ticker-item"><span class="sym">MARKET BARS</span><span>{{ total_bars }}</span></div>
+    <div class="ticker-dot"></div>
+    <div class="ticker-item"><span class="sym">SNAPSHOTS</span><span>{{ total_snapshots }}</span></div>
+    <div class="ticker-dot"></div>
+    <div class="ticker-item"><span class="sym">JOURNAL ENTRIES</span><span>{{ total_journal_entries }}</span></div>
+    <div class="ticker-dot"></div>
+    <div class="ticker-item"><span class="sym">STATUS</span><span class="up">● OPERATIONAL</span></div>
+    <div class="ticker-dot"></div>
+    <div class="ticker-item"><span class="sym">API</span><span>Read-only ops endpoints</span></div>
+    <div class="ticker-dot"></div>
+    <div class="ticker-item"><span class="sym">PREVIEWS</span><span>9 controlled demo routes</span></div>
+    <div class="ticker-dot"></div>
+  </div>
+</div>
+
+{# ── NAV ─────────────────────────────────────────────────────────────────── #}
+<nav id="site-nav" role="navigation" aria-label="Primary">
+  <div class="nav-brand">
+    <div class="nav-logo" aria-hidden="true"></div>
+    <div class="nav-name">Data<span>Bridge</span></div>
+  </div>
+
+  <ul class="nav-links" role="list">
+    <li><a href="#capabilities">Capabilities</a></li>
+    <li><a href="#architecture">Architecture</a></li>
+    <li><a href="#models">Data Models</a></li>
+    <li><a href="#api">API</a></li>
+    <li><a href="#stack">Stack</a></li>
+  </ul>
+
+  <div class="nav-cta">
+    <a href="{% url 'api_ops:reference' %}" class="btn-outline">View Docs</a>
+    {% if github_url %}
+      <a href="{{ github_url }}" target="_blank" rel="noreferrer" class="btn-primary">
+        GitHub <span class="btn-arrow" aria-hidden="true">→</span>
+      </a>
+    {% else %}
+      <a href="{% url 'home' %}" class="btn-primary">
+        Open App <span class="btn-arrow" aria-hidden="true">→</span>
+      </a>
+    {% endif %}
+  </div>
+</nav>
+
+{# ── HERO ─────────────────────────────────────────────────────────────────── #}
+<div class="pl-shell">
+  <div class="hero">
+
+    <div class="hero-left">
+      <div class="hero-eyebrow">
+        <div class="eyebrow-tag">Portfolio Project — Django Data Product</div>
+        <div class="eyebrow-line"></div>
+      </div>
+
+      <h1>Market Data<br><em>Ingestion &amp;</em><br>Analytics API</h1>
+
+      <p class="hero-desc">
+        A production-minded Django platform that ingests multi-source financial data,
+        stores normalized records, computes reusable metric snapshots, and exposes a
+        read-only API layer — with operational monitoring and portfolio-quality presentation.
+      </p>
+
+      <div class="role-badges" role="list" aria-label="Target roles">
+        <span class="role-badge highlight" role="listitem">Analytics Engineer</span>
+        <span class="role-badge highlight" role="listitem">Data Engineer</span>
+        <span class="role-badge" role="listitem">FinTech Analytics</span>
+        <span class="role-badge" role="listitem">Reporting Engineer</span>
+        <span class="role-badge" role="listitem">Python / Django</span>
+      </div>
+
+      <div class="hero-actions">
+        {% if github_url %}
+          <a href="{{ github_url }}" target="_blank" rel="noreferrer" class="btn-primary btn-lg">
+            View on GitHub <span class="btn-arrow" aria-hidden="true">→</span>
+          </a>
+        {% else %}
+          <a href="{% url 'home' %}" class="btn-primary btn-lg">
+            Open Dashboard <span class="btn-arrow" aria-hidden="true">→</span>
+          </a>
+        {% endif %}
+        <a href="#architecture" class="btn-outline btn-lg">Explore Architecture</a>
+        {% if streamlit_url %}
+          <a href="{{ streamlit_url }}" target="_blank" rel="noreferrer" class="btn-outline btn-lg">Open Streamlit</a>
+        {% endif %}
+      </div>
+    </div>
+
+    {# Terminal #}
+    <div class="hero-terminal" role="img" aria-label="Terminal showing DataBridge ETL commands">
+      <div class="terminal-bar" aria-hidden="true">
+        <div class="t-dot t-dot-r"></div>
+        <div class="t-dot t-dot-y"></div>
+        <div class="t-dot t-dot-g"></div>
+        <span class="terminal-title">databridge — manage.py</span>
+      </div>
+      <div class="terminal-body" aria-hidden="true">
+        <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd">python manage.py ingest_market_data \</span></div>
+        <div class="t-line"><span class="t-prompt hidden-prompt">$</span><span class="t-cmd">&nbsp;&nbsp;--source yfinance --symbol BTC-USD \</span></div>
+        <div class="t-line"><span class="t-prompt hidden-prompt">$</span><span class="t-cmd">&nbsp;&nbsp;--timeframe 1h --limit 50 --period 7d</span></div>
+        <div class="t-line t-blank"></div>
+        <div class="t-line"><span class="t-out">[INFO] IngestionRun created → id=<span class="t-num">142</span></span></div>
+        <div class="t-line"><span class="t-out">[INFO] Fetched <span class="t-num">50</span> bars from yfinance client</span></div>
+        <div class="t-line"><span class="t-ok">[OK] Run completed — status: success · rows: <span class="t-num">50</span></span></div>
+        <div class="t-line t-blank"></div>
+        <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd">python manage.py import_trade_journal \</span></div>
+        <div class="t-line"><span class="t-prompt hidden-prompt">$</span><span class="t-cmd">&nbsp;&nbsp;market_ingestion/static/trading-journal.csv</span></div>
+        <div class="t-line"><span class="t-ok">[OK] Journal import completed — <span class="t-num">24</span> entries stored</span></div>
+        <div class="t-line t-blank"></div>
+        <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd">python manage.py compute_metrics \</span></div>
+        <div class="t-line"><span class="t-prompt hidden-prompt">$</span><span class="t-cmd">&nbsp;&nbsp;--symbol BTC-USD --timeframe 1h --source yfinance</span></div>
+        <div class="t-line"><span class="t-ok">[OK] MetricSnapshot computed → run <span class="t-num">#142</span></span></div>
+        <div class="t-line"><span class="t-prompt">$</span><span class="t-cursor"></span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{# ── STATS BAND ───────────────────────────────────────────────────────────── #}
+<div class="stats-band" aria-label="Platform metrics">
+  <div class="stat-item"><span class="stat-num">3</span><div class="stat-label">Data Sources</div></div>
+  <div class="stat-item"><span class="stat-num">4</span><div class="stat-label">Core Models</div></div>
+  <div class="stat-item"><span class="stat-num">3</span><div class="stat-label">ETL Commands</div></div>
+  <div class="stat-item"><span class="stat-num">{{ total_runs }}</span><div class="stat-label">Tracked Runs</div></div>
+  <div class="stat-item"><span class="stat-num">{{ total_bars }}</span><div class="stat-label">Stored Bars</div></div>
+  <div class="stat-item"><span class="stat-num">{{ total_snapshots }}</span><div class="stat-label">Snapshots</div></div>
+</div>
+
+<div class="full-divider"></div>
+
+{# ── ARCHITECTURE ─────────────────────────────────────────────────────────── #}
+<section id="architecture" class="reveal">
+  <div class="section-label">System Design</div>
+  <h2 class="section-title">End-to-End<br>Data Architecture</h2>
+  <p class="section-sub">From raw provider response to operational API output — every step is tracked, stored, and inspectable.</p>
+
+  <div class="arch-flow" role="img" aria-label="ETL pipeline: Extract to Transform to Load to Orchestrate to Serve">
+    <div class="arch-node">
+      <div class="arch-box">Provider Clients<small>yfinance · ccxt · TwelveData</small></div>
+      <div class="arch-box-label">Extract</div>
+    </div>
+    <div class="arch-arrow" aria-hidden="true">→</div>
+    <div class="arch-node">
+      <div class="arch-box">Service Layer<small>ingestion.py · journal_import.py · metrics.py</small></div>
+      <div class="arch-box-label">Transform</div>
+    </div>
+    <div class="arch-arrow" aria-hidden="true">→</div>
+    <div class="arch-node">
+      <div class="arch-box">Normalized Models<small>IngestionRun · MarketBar · MetricSnapshot · TradeJournalEntry</small></div>
+      <div class="arch-box-label">Load</div>
+    </div>
+    <div class="arch-arrow" aria-hidden="true">→</div>
+    <div class="arch-node">
+      <div class="arch-box">ETL Commands<small>manage.py CLI workflows</small></div>
+      <div class="arch-box-label">Orchestrate</div>
+    </div>
+    <div class="arch-arrow" aria-hidden="true">→</div>
+    <div class="arch-node">
+      <div class="arch-box">API + Ops UI<small>/api/ops/ · /ops/ · /demo/</small></div>
+      <div class="arch-box-label">Serve</div>
+    </div>
+  </div>
+</section>
+
+<div class="full-divider"></div>
+
+{# ── CAPABILITIES ─────────────────────────────────────────────────────────── #}
+<section id="capabilities" class="reveal">
+  <div class="section-label">What It Demonstrates</div>
+  <h2 class="section-title">Core Capabilities</h2>
+  <p class="section-sub">Built to show the full span from data engineering fundamentals to analytics delivery and operational observability.</p>
+
+  <div class="cap-grid">
+    <div class="cap-card">
+      <div class="cap-num">01</div>
+      <span class="cap-icon" aria-hidden="true">⚡</span>
+      <div class="cap-title">Multi-Source Ingestion</div>
+      <div class="cap-desc">Connects to yfinance, ccxt, and TwelveData through reusable client modules and a structured ingestion flow.</div>
+    </div>
+    <div class="cap-card">
+      <div class="cap-num">02</div>
+      <span class="cap-icon" aria-hidden="true">🗄️</span>
+      <div class="cap-title">Normalized Persistence</div>
+      <div class="cap-desc">Provider responses are transformed into structured market bars, ETL run records, snapshots, and journal-linked analytics context.</div>
+    </div>
+    <div class="cap-card">
+      <div class="cap-num">03</div>
+      <span class="cap-icon" aria-hidden="true">🔁</span>
+      <div class="cap-title">Repeatable ETL Workflows</div>
+      <div class="cap-desc">Three management commands handle ingest, journal import, and metric computation through inspectable terminal-driven workflows.</div>
+    </div>
+    <div class="cap-card">
+      <div class="cap-num">04</div>
+      <span class="cap-icon" aria-hidden="true">📊</span>
+      <div class="cap-title">Metrics Computation</div>
+      <div class="cap-desc">Computes reusable snapshot outputs — returns, volatility, moving averages, and crossover signals — for reporting and review.</div>
+    </div>
+    <div class="cap-card">
+      <div class="cap-num">05</div>
+      <span class="cap-icon" aria-hidden="true">🔍</span>
+      <div class="cap-title">Operational Monitoring UI</div>
+      <div class="cap-desc">SaaS-style internal views for reviewing ETL run history, stored bars, snapshots, and platform state with filter support.</div>
+    </div>
+    <div class="cap-card">
+      <div class="cap-num">06</div>
+      <span class="cap-icon" aria-hidden="true">🔌</span>
+      <div class="cap-title">Read-Only API Layer</div>
+      <div class="cap-desc">JSON endpoints under <code>/api/ops/</code> expose runs, snapshots, bars, and journal entries with query parameter filtering.</div>
+    </div>
+  </div>
+</section>
+
+<div class="full-divider"></div>
+
+{# ── DATA MODELS ──────────────────────────────────────────────────────────── #}
+<section id="models" class="reveal">
+  <div class="section-label">Schema Design</div>
+  <h2 class="section-title">Data Models</h2>
+  <p class="section-sub">Normalized relational models designed for downstream analytics querying, reporting, and operational inspection.</p>
+
+  <div class="model-grid">
+    <div class="model-card">
+      <div class="model-name">IngestionRun</div>
+      <ul class="model-fields">
+        <li>source <span class="field-type">CharField</span></li>
+        <li>symbol <span class="field-type">CharField</span></li>
+        <li>timeframe <span class="field-type">CharField</span></li>
+        <li>status <span class="field-type">CharField</span></li>
+        <li>rows_inserted / rows_updated / rows_skipped <span class="field-type">IntegerField</span></li>
+        <li>metadata <span class="field-type">JSONField</span></li>
+        <li>started_at / finished_at <span class="field-type">DateTimeField</span></li>
+      </ul>
+    </div>
+    <div class="model-card">
+      <div class="model-name">MarketBar</div>
+      <ul class="model-fields">
+        <li>ingestion_run <span class="field-type">ForeignKey</span></li>
+        <li>source / symbol / timeframe <span class="field-type">CharField</span></li>
+        <li>open / high / low / close <span class="field-type">DecimalField</span></li>
+        <li>volume <span class="field-type">DecimalField</span></li>
+        <li>timestamp <span class="field-type">DateTimeField</span></li>
+        <li>raw_payload <span class="field-type">JSONField</span></li>
+      </ul>
+    </div>
+    <div class="model-card">
+      <div class="model-name">MetricSnapshot</div>
+      <ul class="model-fields">
+        <li>symbol / timeframe <span class="field-type">CharField</span></li>
+        <li>snapshot_time <span class="field-type">DateTimeField</span></li>
+        <li>close_price <span class="field-type">DecimalField</span></li>
+        <li>return_1d / return_7d <span class="field-type">DecimalField</span></li>
+        <li>volatility_14d <span class="field-type">DecimalField</span></li>
+        <li>sma_fast / sma_slow <span class="field-type">DecimalField</span></li>
+        <li>crossover_signal <span class="field-type">CharField</span></li>
+      </ul>
+    </div>
+    <div class="model-card">
+      <div class="model-name">TradeJournalEntry</div>
+      <ul class="model-fields">
+        <li>symbol / side <span class="field-type">CharField</span></li>
+        <li>opened_at / closed_at <span class="field-type">DateTimeField</span></li>
+        <li>open_price / close_price <span class="field-type">DecimalField</span></li>
+        <li>size / pnl <span class="field-type">DecimalField</span></li>
+        <li>source_file / row_number <span class="field-type">CharField / IntegerField</span></li>
+        <li>notes <span class="field-type">TextField</span></li>
+        <li>raw_row <span class="field-type">JSONField</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="full-divider"></div>
+
+{# ── API ENDPOINTS ────────────────────────────────────────────────────────── #}
+<section id="api" class="reveal">
+  <div class="section-label">API Layer</div>
+  <h2 class="section-title">Read-Only<br>JSON Endpoints</h2>
+  <p class="section-sub">All endpoints support query parameter filtering. A human-readable reference page is available at <code>/api/ops/reference/</code>.</p>
+
+  <div class="endpoint-list">
+    <div class="endpoint">
+      <div class="method">GET</div>
+      <div class="endpoint-path">/api/ops/<span>reference</span>/</div>
+      <div class="endpoint-desc">Human-readable API documentation</div>
+    </div>
+    <div class="endpoint">
+      <div class="method">GET</div>
+      <div class="endpoint-path">/api/ops/<span>runs</span>/?source=yfinance&amp;status=success</div>
+      <div class="endpoint-desc">Ingestion run list with filters</div>
+    </div>
+    <div class="endpoint">
+      <div class="method">GET</div>
+      <div class="endpoint-path">/api/ops/<span>runs</span>/&lt;id&gt;/</div>
+      <div class="endpoint-desc">Ingestion run detail by ID</div>
+    </div>
+    <div class="endpoint">
+      <div class="method">GET</div>
+      <div class="endpoint-path">/api/ops/<span>snapshots</span>/?symbol=BTC-USD</div>
+      <div class="endpoint-desc">Metric snapshot list with filters</div>
+    </div>
+    <div class="endpoint">
+      <div class="method">GET</div>
+      <div class="endpoint-path">/api/ops/<span>bars</span>/?symbol=BTC-USD&amp;timeframe=1h</div>
+      <div class="endpoint-desc">Market bar OHLCV records</div>
+    </div>
+    <div class="endpoint">
+      <div class="method">GET</div>
+      <div class="endpoint-path">/api/ops/<span>journal</span>/?source_file=trading-journal.csv</div>
+      <div class="endpoint-desc">Trade journal entries</div>
+    </div>
+  </div>
+</section>
+
+<div class="full-divider"></div>
+
+{# ── STACK + PROOF ────────────────────────────────────────────────────────── #}
+<section id="stack" class="reveal">
+  <div class="section-label">Technology</div>
+  <h2 class="section-title">Stack</h2>
+  <p class="section-sub">Standard, industry-relevant tooling chosen for data-product credibility and role alignment.</p>
+
+  <div class="stack-grid">
+    <div class="stack-item"><div class="stack-category">Backend</div><div class="stack-name">Django</div></div>
+    <div class="stack-item"><div class="stack-category">Language</div><div class="stack-name">Python</div></div>
+    <div class="stack-item"><div class="stack-category">Market Data</div><div class="stack-name">yfinance</div></div>
+    <div class="stack-item"><div class="stack-category">Crypto Data</div><div class="stack-name">ccxt</div></div>
+    <div class="stack-item"><div class="stack-category">Financial API</div><div class="stack-name">TwelveData</div></div>
+    <div class="stack-item"><div class="stack-category">Analytics UI</div><div class="stack-name">Streamlit</div></div>
+    <div class="stack-item"><div class="stack-category">Database</div><div class="stack-name">SQLite / PostgreSQL</div></div>
+    <div class="stack-item"><div class="stack-category">Testing</div><div class="stack-name">Django TestCase</div></div>
+  </div>
+
+  <div class="proof-strip" role="list" aria-label="Demonstrated capabilities">
+    <div class="proof-item" role="listitem">
+      <div class="proof-check" aria-hidden="true">✓</div>
+      <div class="proof-label">ETL Workflow<br>Design</div>
+    </div>
+    <div class="proof-item" role="listitem">
+      <div class="proof-check" aria-hidden="true">✓</div>
+      <div class="proof-label">Multi-source<br>Integration</div>
+    </div>
+    <div class="proof-item" role="listitem">
+      <div class="proof-check" aria-hidden="true">✓</div>
+      <div class="proof-label">Normalized<br>Model Design</div>
+    </div>
+    <div class="proof-item" role="listitem">
+      <div class="proof-check" aria-hidden="true">✓</div>
+      <div class="proof-label">Read-only<br>API Delivery</div>
+    </div>
+    <div class="proof-item" role="listitem">
+      <div class="proof-check" aria-hidden="true">✓</div>
+      <div class="proof-label">Ops Monitoring<br>UI</div>
+    </div>
+  </div>
+</section>
+
+<div class="full-divider"></div>
+
+{# ── FOOTER ───────────────────────────────────────────────────────────────── #}
+<footer role="contentinfo">
+  <div class="footer-brand">Data<span>Bridge</span> Market API</div>
+
+  <nav class="footer-links" aria-label="Footer navigation">
+    {% if github_url %}<a href="{{ github_url }}" target="_blank" rel="noreferrer">GitHub</a>{% endif %}
+    <a href="{% url 'api_ops:reference' %}">API Docs</a>
+    <a href="{% url 'home' %}">Dashboard</a>
+    <a href="{% url 'ops:ingestion_runs' %}">Ops</a>
+    <a href="{% url 'demo:btc_yfinance_page' %}">Demo Preview</a>
+  </nav>
+
+  <div class="footer-meta">
+    Django · Python · yfinance · ccxt · TwelveData<br>
+    Portfolio project — Analytics &amp; Data Engineering
+  </div>
+</footer>
+
+{# ── JS: nav shadow + scroll reveal ──────────────────────────────────────── #}
+<script>
+(function () {
+  'use strict';
+
+  /* Scroll-aware nav shadow */
+  var nav = document.getElementById('site-nav');
+  function syncNav() { nav.classList.toggle('scrolled', window.scrollY > 12); }
+  window.addEventListener('scroll', syncNav, { passive: true });
+  syncNav();
+
+  /* Section scroll-reveal via IntersectionObserver */
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08 });
+
+    document.querySelectorAll('.reveal').forEach(function (el) {
+      io.observe(el);
+    });
+  } else {
+    /* No IO support — reveal everything immediately */
+    document.querySelectorAll('.reveal').forEach(function (el) {
+      el.classList.add('is-visible');
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

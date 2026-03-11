@@ -1,29 +1,58 @@
 {% extends "base.html" %}
-{% load custom_tags %}
 
 {% block title %}{{ title }}{% endblock %}
 {% block title_heading %}{{ title }}{% endblock %}
-{% block subtitle %}Inspect raw provider responses and structured output in JSON format.{% endblock %}
+{% block subtitle %}Inspect raw provider responses and structured output in JSON [JavaScript Object Notation] format.{% endblock %}
 
 {% block page_actions %}
-<button id="copyButton" class="btn btn-outline-secondary btn-sm">Copy JSON</button>
-<button id="downloadButton" class="btn btn-outline-primary btn-sm">Download JSON</button>
-<button id="refreshButton" class="btn btn-outline-success btn-sm">Refresh</button>
+<button id="copyButton" class="btn btn-outline-primary" type="button">Copy JSON</button>
+<button id="downloadButton" class="btn btn-outline-primary" type="button">Download JSON</button>
+<button id="refreshButton" class="btn btn-primary" type="button">Refresh</button>
 {% endblock %}
 
 {% block content %}
-<div class="db-panel">
-  <pre id="jsonContent">{{ json_data|safe }}</pre>
-  <textarea id="jsonText" class="d-none">{{ json_data|safe }}</textarea>
-</div>
+<section class="json-view-shell">
+  <div class="json-view-card">
+    <div class="json-view-header">
+      <div>
+        <p class="json-view-kicker">Payload Inspector</p>
+        <h2 class="json-view-title">{{ title }}</h2>
+        <p class="json-view-subtitle">Inspect raw provider responses, validate structured output, and review JSON [JavaScript Object Notation] payloads in a cleaner SaaS-style monitor view.</p>
+      </div>
 
-<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-  <div id="copyToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="json-view-badge-row">
+        <span class="json-view-badge">Read-only</span>
+        <span class="json-view-badge">Auto refresh: 60s</span>
+        <span class="json-view-badge">Format: JSON</span>
+      </div>
+    </div>
+
+    <div class="json-view-code-wrap">
+      <pre id="jsonContent" class="json-view-pre">{{ json_data|safe }}</pre>
+    </div>
+
+    <textarea id="jsonText" class="json-view-textarea" aria-hidden="true" tabindex="-1">{{ json_data|safe }}</textarea>
+  </div>
+</section>
+
+<div class="json-view-toast-wrap">
+  <div
+    id="copyToast"
+    class="toast json-view-toast align-items-center border-0"
+    role="alert"
+    aria-live="assertive"
+    aria-atomic="true"
+  >
     <div class="d-flex">
       <div class="toast-body">
         JSON copied to clipboard.
       </div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      <button
+        type="button"
+        class="btn-close btn-close-white me-2 m-auto"
+        data-bs-dismiss="toast"
+        aria-label="Close"
+      ></button>
     </div>
   </div>
 </div>
@@ -31,33 +60,57 @@
 
 {% block extra_js %}
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-  const jsonText = document.getElementById("jsonText").value.trim();
+document.addEventListener("DOMContentLoaded", function () {
+  const copyButton = document.getElementById("copyButton");
+  const downloadButton = document.getElementById("downloadButton");
+  const refreshButton = document.getElementById("refreshButton");
+  const copyToastEl = document.getElementById("copyToast");
+  const jsonTextEl = document.getElementById("jsonText");
 
-  document.getElementById("copyButton").addEventListener("click", function() {
-    navigator.clipboard.writeText(jsonText).then(function() {
-      const toast = new bootstrap.Toast(document.getElementById("copyToast"));
-      toast.show();
-    }).catch(function(err) {
-      alert("Failed to copy: " + err);
+  function getJsonText() {
+    return jsonTextEl ? jsonTextEl.value.trim() : "";
+  }
+
+  if (copyButton) {
+    copyButton.addEventListener("click", async function () {
+      try {
+        await navigator.clipboard.writeText(getJsonText());
+
+        if (window.bootstrap && copyToastEl) {
+          const toast = bootstrap.Toast.getOrCreateInstance(copyToastEl);
+          toast.show();
+        }
+      } catch (err) {
+        alert("Failed to copy JSON: " + err);
+      }
     });
-  });
+  }
 
-  document.getElementById("downloadButton").addEventListener("click", function() {
-    const blob = new Blob([jsonText], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "data.json";
-    a.click();
-    URL.revokeObjectURL(url);
-  });
+  if (downloadButton) {
+    downloadButton.addEventListener("click", function () {
+      const payload = getJsonText();
+      const blob = new Blob([payload], { type: "application/json;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
 
-  document.getElementById("refreshButton").addEventListener("click", function() {
+      link.href = url;
+      link.download = "data.json";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    });
+  }
+
+  if (refreshButton) {
+    refreshButton.addEventListener("click", function () {
+      location.reload();
+    });
+  }
+
+  window.setTimeout(function () {
     location.reload();
-  });
-
-  setTimeout(() => location.reload(), 60000);
+  }, 60000);
 });
 </script>
 {% endblock %}

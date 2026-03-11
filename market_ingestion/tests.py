@@ -2,12 +2,19 @@ from decimal import Decimal
 from io import StringIO
 from unittest.mock import patch
 
+import pandas as pd
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
-
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
-from django.test import TestCase, override_settings
+
+from market_ingestion.models import (
+    IngestionRun,
+    MarketBar,
+    MetricSnapshot,
+    TradeJournalEntry,
+)
 
 TEST_STORAGES = {
     "default": {
@@ -17,18 +24,13 @@ TEST_STORAGES = {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
-from market_ingestion.models import (
-    IngestionRun,
-    MarketBar,
-    MetricSnapshot,
-    TradeJournalEntry,
-)
 
 
 class BaseDataMixin:
     def setUp(self):
         super().setUp()
         self.user_model = get_user_model()
+
         self.staff_user = self.user_model.objects.create_user(
             username="staffuser",
             email="staff@databridge.local",
@@ -241,6 +243,172 @@ class APITests(BaseDataMixin, TestCase):
         self.assertEqual(payload["result"]["id"], self.journal_entry.id)
 
 
+@override_settings(STORAGES=TEST_STORAGES)
+class DemoRouteTests(BaseDataMixin, TestCase):
+    @patch("market_ingestion.views._fetch_btc_yfinance_history")
+    def test_demo_btc_yfinance_json_loads(self, mock_fetch):
+        mock_fetch.return_value = pd.DataFrame(
+            [
+                {
+                    "Datetime": pd.Timestamp("2026-03-01 00:00:00"),
+                    "Open": 62000,
+                    "High": 62500,
+                    "Low": 61800,
+                    "Close": 62400,
+                    "Volume": 10.5,
+                }
+            ]
+        )
+
+        response = self.client.get(reverse("demo:btc_yfinance"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "BTC/USD yfinance JSON")
+
+    @patch("market_ingestion.views._fetch_btc_yfinance_history")
+    def test_demo_btc_yfinance_table_loads(self, mock_fetch):
+        mock_fetch.return_value = pd.DataFrame(
+            [
+                {
+                    "Datetime": pd.Timestamp("2026-03-01 00:00:00"),
+                    "Open": 62000,
+                    "High": 62500,
+                    "Low": 61800,
+                    "Close": 62400,
+                    "Volume": 10.5,
+                }
+            ]
+        )
+
+        response = self.client.get(reverse("demo:btc_yfinance_page"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "BTC/USD yfinance Table")
+
+    @patch("market_ingestion.views.yf.Ticker")
+    def test_demo_btc_yfinance_info_loads(self, mock_ticker):
+        mock_ticker.return_value.info = {
+            "marketCap": 1200000000,
+            "sector": "Crypto",
+            "currency": "USD",
+            "quoteType": "CRYPTOCURRENCY",
+        }
+
+        response = self.client.get(reverse("demo:btc_yfinance_info"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "BTC/USD Market Info")
+        self.assertContains(response, "USD")
+
+    @patch("market_ingestion.views._fetch_btc_ccxt_ticker")
+    def test_demo_btc_ccxt_json_loads(self, mock_fetch):
+        mock_fetch.return_value = {
+            "symbol": "BTC/USDT",
+            "last": 62400,
+            "bid": 62390,
+            "ask": 62410,
+        }
+
+        response = self.client.get(reverse("demo:btc_ccxt"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "BTC/USDT ccxt JSON")
+
+    @patch("market_ingestion.views._fetch_btc_ccxt_ticker")
+    def test_demo_btc_ccxt_table_loads(self, mock_fetch):
+        mock_fetch.return_value = {
+            "symbol": "BTC/USDT",
+            "last": 62400,
+            "bid": 62390,
+            "ask": 62410,
+        }
+
+        response = self.client.get(reverse("demo:btc_ccxt_page"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "BTC/USDT ccxt Table")
+
+    @patch("market_ingestion.views._fetch_eurusd_twelvedata")
+    def test_demo_eurusd_twelvedata_table_loads(self, mock_fetch):
+        mock_fetch.return_value = {
+            "values": [
+                {
+                    "datetime": "2026-03-01 00:00:00",
+                    "open": "1.0800",
+                    "high": "1.0810",
+                    "low": "1.0795",
+                    "close": "1.0805",
+                    "volume": "1000",
+                }
+            ]
+        }
+
+        response = self.client.get(reverse("demo:eurusd_twelvedata_page"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "EUR/USD TwelveData Table")
+
+    @patch("market_ingestion.views._fetch_eurusd_twelvedata")
+    def test_demo_eurusd_twelvedata_json_loads(self, mock_fetch):
+        mock_fetch.return_value = {
+            "status": "ok",
+            "values": [
+                {
+                    "datetime": "2026-03-01 00:00:00",
+                    "open": "1.0800",
+                    "high": "1.0810",
+                    "low": "1.0795",
+                    "close": "1.0805",
+                    "volume": "1000",
+                }
+            ],
+        }
+
+        response = self.client.get(reverse("demo:eurusd_twelvedata_json"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "EUR/USD TwelveData JSON")
+
+    @patch("market_ingestion.views._fetch_raw_btc_yfinance_history")
+    def test_demo_btc_yfinance_compare_loads(self, mock_fetch_hist):
+        self.journal_entry.symbol = "BTC-USD"
+        self.journal_entry.opened_at = timezone.now()
+        self.journal_entry.open_price = Decimal("62000.00000000")
+        self.journal_entry.save()
+
+        mock_fetch_hist.return_value = pd.DataFrame(
+            [
+                {
+                    "Datetime": pd.Timestamp(self.journal_entry.opened_at),
+                    "Open": 62000,
+                    "High": 62500,
+                    "Low": 61800,
+                    "Close": 62400,
+                    "Volume": 10.5,
+                }
+            ]
+        )
+
+        response = self.client.get(reverse("demo:btc_yfinance_compare"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Trade Log Comparison")
+        self.assertContains(response, "BTC-USD")
+
+    @patch("market_ingestion.views.yf.Ticker")
+    def test_demo_btc_yfinance_plot_loads(self, mock_ticker):
+        mock_ticker.return_value.history.return_value = pd.DataFrame(
+            {
+                "Close": [62000, 62100, 62200, 62300],
+            },
+            index=pd.to_datetime(
+                [
+                    "2026-03-01 00:00:00",
+                    "2026-03-01 01:00:00",
+                    "2026-03-01 02:00:00",
+                    "2026-03-01 03:00:00",
+                ]
+            ),
+        )
+
+        response = self.client.get(reverse("demo:btc_yfinance_plot"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "BTC/USD Chart")
+
+
+@override_settings(STORAGES=TEST_STORAGES)
 class CommandTests(BaseDataMixin, TestCase):
     @patch("market_ingestion.management.commands.ingest_market_data.ingest_from_yfinance")
     def test_ingest_market_data_command_calls_service_and_reports_success(self, mock_ingest):
@@ -309,8 +477,8 @@ class CommandTests(BaseDataMixin, TestCase):
             symbol="TRADE-JOURNAL",
             timeframe="",
             status="success",
-            rows_inserted=422,
-            rows_updated=0,
+            rows_inserted=0,
+            rows_updated=422,
             rows_skipped=0,
         )
         mock_import.return_value = mock_run

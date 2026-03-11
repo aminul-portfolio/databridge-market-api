@@ -7,10 +7,25 @@
   --border: #e5e7eb;
   --ink: #0f172a;
   --muted: #64748b;
+
   --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --primary-soft: rgba(37, 99, 235, 0.12);
+
+  --accent: #4f46e5;
+  --accent-dark: #4338ca;
+  --info: #06b6d4;
+
   --success: #16a34a;
   --warning: #d97706;
   --danger: #dc2626;
+
+  --success-bg: #dcfce7;
+  --warning-bg: #fef3c7;
+  --danger-bg: #fee2e2;
+  --info-bg: #e0e7ff;
+  --pending-bg: #e2e8f0;
+
   --radius: 18px;
   --radius-sm: 12px;
   --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);

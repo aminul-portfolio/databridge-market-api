@@ -1,89 +1,14 @@
-<style>
-  .ops-tabs-wrap {
-    margin: 0 0 1rem 0;
-  }
-
-  .ops-tabs-meta {
-    margin-bottom: 0.5rem;
-  }
-
-  .ops-tabs-label {
-    margin: 0;
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #6b7280;
-  }
-
-  .ops-tabs-subtitle {
-    margin: 0.2rem 0 0 0;
-    font-size: 0.9rem;
-    color: #6b7280;
-  }
-
-  .ops-tabs-bar {
-    display: inline-flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    padding: 0.4rem;
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    border-radius: 14px;
-    background: #ffffff;
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
-  }
-
-  .ops-tab-link {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 38px;
-    padding: 0.7rem 1rem;
-    border-radius: 10px;
-    text-decoration: none;
-    font-size: 0.92rem;
-    font-weight: 600;
-    color: #475569;
-    background: transparent;
-    border: 1px solid transparent;
-    transition: all 0.18s ease;
-  }
-
-  .ops-tab-link:hover {
-    background: #f8fafc;
-    color: #0f172a;
-    border-color: rgba(15, 23, 42, 0.08);
-  }
-
-  .ops-tab-link.is-active {
-    background: #4f46e5;
-    color: #ffffff;
-    border-color: #4f46e5;
-    box-shadow: 0 8px 18px rgba(79, 70, 229, 0.22);
-  }
-
-  @media (max-width: 640px) {
-    .ops-tabs-bar {
-      display: flex;
-      width: 100%;
-    }
-
-    .ops-tab-link {
-      flex: 1 1 100%;
-    }
-  }
-</style>
-
+{# market_ingestion/templates/market_ingestion/ops/_ops_tabs.html #}
 <section class="ops-tabs-wrap">
   <div class="ops-tabs-meta">
     <p class="ops-tabs-label">Operations Workspace</p>
-    <p class="ops-tabs-subtitle">Inspect operational summaries, ETL runs, metric outputs, and normalized market bars.</p>
+    <p class="ops-tabs-subtitle">Inspect operational summaries, ETL [Extract, Transform, Load] runs, metric outputs, and normalized market bars.</p>
   </div>
 
   <nav class="ops-tabs-bar" aria-label="Operational navigation">
     <a
       href="{% url 'ops:dashboard' %}"
-      class="ops-tab-link {% if current_section == 'dashboard' %}is-active{% endif %}"
+      class="ops-tab-link{% if current_section == 'dashboard' %} is-active{% endif %}"
       {% if current_section == 'dashboard' %}aria-current="page"{% endif %}
     >
       Ops Dashboard
@@ -91,7 +16,7 @@
 
     <a
       href="{% url 'ops:ingestion_runs' %}"
-      class="ops-tab-link {% if current_section == 'runs' %}is-active{% endif %}"
+      class="ops-tab-link{% if current_section == 'runs' %} is-active{% endif %}"
       {% if current_section == 'runs' %}aria-current="page"{% endif %}
     >
       Ingestion Runs
@@ -99,7 +24,7 @@
 
     <a
       href="{% url 'ops:metric_snapshots' %}"
-      class="ops-tab-link {% if current_section == 'snapshots' %}is-active{% endif %}"
+      class="ops-tab-link{% if current_section == 'snapshots' %} is-active{% endif %}"
       {% if current_section == 'snapshots' %}aria-current="page"{% endif %}
     >
       Metric Snapshots
@@ -107,7 +32,7 @@
 
     <a
       href="{% url 'ops:market_bars' %}"
-      class="ops-tab-link {% if current_section == 'bars' %}is-active{% endif %}"
+      class="ops-tab-link{% if current_section == 'bars' %} is-active{% endif %}"
       {% if current_section == 'bars' %}aria-current="page"{% endif %}
     >
       Market Bars

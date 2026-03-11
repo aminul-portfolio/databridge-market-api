@@ -9,34 +9,58 @@
 {% endblock %}
 
 {% block content %}
-<div class="db-panel">
-  <h2 class="mb-3">{{ title }}</h2>
+<section class="table-view-shell">
+  <div class="table-view-card">
+    <div class="table-view-header">
+      <div>
+        <p class="table-view-kicker">Structured Dataset</p>
+        <h2 class="table-view-title">{{ title }}</h2>
+        <p class="table-view-subtitle">Operational table view for quick inspection, source validation, and portfolio-ready presentation of normalized records.</p>
+      </div>
 
-  <div class="table-responsive">
-    <table class="table table-bordered table-striped align-middle">
-      <thead>
-        <tr>
+      <div class="table-view-badge-row">
+        <span class="table-view-badge">Tabular View</span>
+        <span class="table-view-badge">Read-only</span>
+        <span class="table-view-badge">
+          Rows:
           {% if data %}
-            {% for key in data.0.keys %}
-              <th>{{ key }}</th>
-            {% endfor %}
+            {{ data|length }}
+          {% else %}
+            0
           {% endif %}
-        </tr>
-      </thead>
-      <tbody>
-        {% for row in data %}
-        <tr>
-          {% for val in row.values %}
-          <td>{{ val }}</td>
-          {% endfor %}
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="20">No table data available.</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        </span>
+      </div>
+    </div>
+
+    {% if data %}
+    <div class="table-view-frame">
+      <div class="table-view-scroll">
+        <table class="table-view-table">
+          <thead>
+            <tr>
+              {% for key in data.0.keys %}
+              <th>{{ key }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in data %}
+            <tr>
+              {% for val in row.values %}
+              <td>{{ val|default:"—" }}</td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% else %}
+    <div class="table-view-empty">
+      <span class="table-view-empty-title">No table data available</span>
+      <span class="table-view-empty-copy">This source did not return any structured rows for display.</span>
+    </div>
+    {% endif %}
   </div>
-</div>
+</section>
 {% endblock %}
