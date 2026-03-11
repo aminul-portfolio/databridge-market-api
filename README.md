@@ -12,9 +12,6 @@
 
 **Includes:** multi-source ingestion commands, normalized models, metric snapshots, operations UI, read-only JSON API, Streamlit output, and proof artifacts under `docs/`.
 
->>>>>>> 8319a23 (Polish README and portfolio screenshots for DataBridge Market API)
----
-
 ## For Hiring Managers
 
 This project demonstrates the **upstream engineering side** of analytics work — not just charts and dashboards, but the full pipeline that makes them possible.
