@@ -1,9 +1,18 @@
 # DataBridge Market API
 
+<<<<<<< HEAD
 > A Django data product for multi-source market data ingestion, normalized storage, ETL [Extract, Transform, Load] workflows, operational visibility, and read-only API [Application Programming Interface] delivery — built to demonstrate Analytics Engineer, Data Engineer, FinTech, and BI [Business Intelligence] / reporting capability.
 
 **Source ingestion → Normalized storage → Metric computation → Operational visibility → API delivery → Analytics consumption**
 **Includes:** multi-source ingestion commands, normalised models, metric snapshots, operations UI, read-only JSON API, Streamlit output, and proof artefacts under `docs/`.
+=======
+> A Django data product for multi-source market data ingestion, normalized storage, ETL (Extract, Transform, Load) workflows, operational visibility, and read-only API delivery — built to demonstrate Analytics Engineer, Data Engineer, FinTech, and BI / reporting capability.
+
+**Source ingestion → Normalized storage → Metric computation → Operational visibility → API delivery → Analytics consumption**
+
+**Includes:** multi-source ingestion commands, normalized models, metric snapshots, operations UI, read-only JSON API, Streamlit output, and proof artifacts under `docs/`.
+
+>>>>>>> 8319a23 (Polish README and portfolio screenshots for DataBridge Market API)
 ---
 
 ## For Hiring Managers
@@ -11,10 +20,15 @@
 This project demonstrates the **upstream engineering side** of analytics work — not just charts and dashboards, but the full pipeline that makes them possible.
 
 **Analytics Engineer / BI Engineer**
-— Normalized relational model designed for downstream reporting. Reusable metric snapshot computation (returns, volatility, SMA, crossover signals). Read-only API endpoints with filtering and human-readable reference docs. Analyst-facing Streamlit output surface.
+- Normalized relational model designed for downstream reporting
+- Reusable metric snapshot computation (returns, volatility, SMA, crossover signals)
+- Read-only API endpoints with filtering and human-readable reference docs
+- Analyst-facing Streamlit output surface
 
 **Data Engineer / Junior Integration Engineer**
-— Three live provider integrations (yfinance, ccxt, TwelveData). Repeatable ETL workflows via Django management commands. Full run observability: status, timestamps, row counts, and execution context logged per run.
+- Three live provider integrations (yfinance, ccxt, TwelveData)
+- Repeatable ETL workflows via Django management commands
+- Full run observability: status, timestamps, row counts, and execution context logged per run
 
 **The interview story in one sentence:**
 > *"External market data from multiple providers flows through ingestion commands into a normalized store, metric snapshots are computed on demand, and everything is queryable via a read-only API with an ops monitoring UI."*
@@ -165,8 +179,8 @@ All endpoints are read-only and support query parameter filtering.
 pip install -r requirements.txt
 
 # 2. Configure environment
-cp .env.example .env
-# Fill in: DJANGO_SETTINGS_MODULE, TWELVEDATA_API_KEY, STREAMLIT_URL, CCXT_EXCHANGE
+# Copy `.env.example` to `.env` and fill in the required values:
+# DJANGO_SETTINGS_MODULE, TWELVEDATA_API_KEY, STREAMLIT_URL, CCXT_EXCHANGE
 
 # 3. Run Django
 python manage.py migrate
