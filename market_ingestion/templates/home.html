@@ -3,324 +3,441 @@
 {% block title %}Dashboard{% endblock %}
 {% block title_heading %}Executive Dashboard{% endblock %}
 {% block page_kicker %}Market Data Platform{% endblock %}
-{% block subtitle %}Operational overview of ingestion activity, stored market data, computed metrics, controlled source previews, public portfolio presentation, and portfolio-facing API access.{% endblock %}
+{% block subtitle %}Unified operational workspace for ingestion monitoring, metric snapshots, controlled source previews, portfolio presentation, and API-facing inspection.{% endblock %}
 
-{% block page_actions %}
-<a href="{% url 'api_ops:reference' %}" class="btn btn-outline-primary">API Reference</a>
-<a href="{% url 'public_landing' %}" class="btn btn-outline-primary">Open Portfolio Landing</a>
-{% if STREAMLIT_URL %}
-<a href="{{ STREAMLIT_URL }}" target="_blank" rel="noreferrer" class="btn btn-primary">Open Streamlit</a>
-{% endif %}
-{% endblock %}
+{% block page_actions %}{% endblock %}
 
 {% block content %}
-<div class="dash-shell">
-  <section class="dash-hero">
-    <div class="dash-hero-grid">
-      <div>
-        <p class="dash-hero-kicker">Portfolio-Ready Data Product</p>
-        <h2 class="dash-hero-title">Operational market-data platform with ETL, snapshots, APIs, and controlled source previews.</h2>
-        <p class="dash-hero-copy">
-          DataBridge Market API is positioned as a Python and Django data product that ingests market data, stores normalized records,
-          computes reusable metrics, and exposes operational, API-facing, and portfolio-facing surfaces for monitoring, integration,
-          and FinTech-style presentation.
-        </p>
+<div class="home-shell">
 
-        <div class="dash-hero-badges">
-          <span class="dash-badge">Python & Django</span>
-          <span class="dash-badge">ETL Workflows</span>
-          <span class="dash-badge">KPI Snapshots</span>
-          <span class="dash-badge">Read-only APIs</span>
-          <span class="dash-badge">FinTech / BI Positioning</span>
-          <span class="dash-badge">Public Portfolio Landing</span>
-        </div>
-      </div>
+  <section class="home-hero">
+  <div class="home-hero-main">
+    <p class="home-eyebrow">Operational Control Center</p>
+    <h2 class="home-hero-title">
+      Enterprise market-data workspace for ingestion, analytics snapshots, API delivery, and portfolio proof.
+    </h2>
+    <p class="home-hero-copy">
+      DataBridge Market API is a Python and Django data product that ingests market data, stores normalized records,
+      computes reusable metrics, and exposes structured operational and portfolio-facing surfaces for monitoring,
+      inspection, and FinTech-style presentation.
+    </p>
 
-      <div class="dash-hero-summary">
-        <div class="dash-mini-card">
-          <p class="dash-mini-label">Latest successful run</p>
-          <p class="dash-mini-value">
-            {% if latest_successful_run %}
-              {{ latest_successful_run.source }} / {{ latest_successful_run.symbol }} / {{ latest_successful_run.timeframe|default:"—" }}
-            {% else %}
-              No successful run recorded yet
-            {% endif %}
-          </p>
-          <p class="dash-mini-subtext">
-            {% if latest_successful_run %}
-              Completed {{ latest_successful_run.finished_at|date:"Y-m-d H:i" }}
-            {% else %}
-              Run ingestion commands to populate the platform.
-            {% endif %}
-          </p>
-        </div>
-
-        <div class="dash-mini-card">
-          <p class="dash-mini-label">Latest snapshot signal</p>
-          <p class="dash-mini-value">
-            {% if latest_snapshot %}
-              {{ latest_snapshot.crossover_signal|default:"—" }}
-            {% else %}
-              No snapshot available
-            {% endif %}
-          </p>
-          <p class="dash-mini-subtext">
-            {% if latest_snapshot %}
-              {{ latest_snapshot.symbol }} / {{ latest_snapshot.timeframe }} / {{ latest_snapshot.snapshot_time|date:"Y-m-d H:i" }}
-            {% else %}
-              Compute metrics after ingestion to generate analytical state.
-            {% endif %}
-          </p>
-        </div>
-
-        <div class="dash-mini-card">
-          <p class="dash-mini-label">Access surface</p>
-          <p class="dash-mini-value">Operations, APIs, portfolio, and source previews</p>
-          <p class="dash-mini-subtext">Structured to support monitoring, recruiter review, and integration-style inspection.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="dash-stat-grid">
-    <div class="dash-stat-card">
-      <p class="dash-stat-label">Ingestion Runs</p>
-      <p class="dash-stat-value">{{ total_runs }}</p>
-      <p class="dash-stat-foot">Tracked ETL executions across configured sources.</p>
-    </div>
-
-    <div class="dash-stat-card">
-      <p class="dash-stat-label">Stored Market Bars</p>
-      <p class="dash-stat-value">{{ total_bars }}</p>
-      <p class="dash-stat-foot">Normalized OHLCV records available for downstream use.</p>
-    </div>
-
-    <div class="dash-stat-card">
-      <p class="dash-stat-label">Metric Snapshots</p>
-      <p class="dash-stat-value">{{ total_snapshots }}</p>
-      <p class="dash-stat-foot">Computed analytical outputs for dashboard and API delivery.</p>
-    </div>
-
-    <div class="dash-stat-card">
-      <p class="dash-stat-label">Journal Entries</p>
-      <p class="dash-stat-value">{{ total_journal_entries }}</p>
-      <p class="dash-stat-foot">Imported trade-journal records for portfolio analytics context.</p>
-    </div>
-  </section>
-
-  <section class="dash-panel">
-    <div class="dash-panel-header">
-      <div>
-        <p class="dash-panel-kicker">Workspace Shortcuts</p>
-        <h2 class="dash-panel-title">Product Surfaces</h2>
-        <p class="dash-panel-subtitle">
-          Navigate between operational monitoring, API inspection, public portfolio presentation,
-          and selected secondary proof pages without turning the main platform into a demo-first experience.
-        </p>
-      </div>
-    </div>
-
-    <div class="dash-action-grid">
-      <div class="dash-action-group">
-        <h3 class="dash-action-group-title">Operations & Monitoring</h3>
-        <p class="dash-action-group-subtitle">
-          Review ingestion execution history, stored market bars, and analytical snapshots through the internal operations layer.
-        </p>
-
-        <div class="dash-action-row">
-          <a href="{% url 'ops:dashboard' %}" class="dash-pill-link">Ops Dashboard</a>
-          <a href="{% url 'ops:ingestion_runs' %}" class="dash-pill-link">Ingestion Runs</a>
-          <a href="{% url 'ops:metric_snapshots' %}" class="dash-pill-link">Metric Snapshots</a>
-          <a href="{% url 'ops:market_bars' %}" class="dash-pill-link">Market Bars</a>
-          {% if STREAMLIT_URL %}
-          <a href="{{ STREAMLIT_URL }}" target="_blank" rel="noreferrer" class="dash-pill-link is-primary">Streamlit Dashboard</a>
+    <div class="home-hero-meta">
+      <div class="home-hero-meta-item">
+        <span class="home-hero-meta-label">Latest run</span>
+        <strong class="home-hero-meta-value">
+          {% if latest_run %}
+            {{ latest_run.source }} / {{ latest_run.symbol }}
+          {% else %}
+            —
           {% endif %}
-        </div>
+        </strong>
       </div>
-
-      <div class="dash-action-group">
-        <h3 class="dash-action-group-title">API Access</h3>
-        <p class="dash-action-group-subtitle">
-          Use read-only JSON [JavaScript Object Notation] endpoints for integration-style review, filtering examples, and recruiter-facing API evidence.
-        </p>
-
-        <div class="dash-action-row">
-          <a href="{% url 'api_ops:reference' %}" class="dash-pill-link">API Reference</a>
-          <a href="{% url 'api_ops:runs' %}" class="dash-pill-link" target="_blank" rel="noreferrer">Runs API</a>
-          <a href="{% url 'api_ops:snapshots' %}" class="dash-pill-link" target="_blank" rel="noreferrer">Snapshots API</a>
-          <a href="{% url 'api_ops:bars' %}" class="dash-pill-link" target="_blank" rel="noreferrer">Bars API</a>
-          <a href="{% url 'api_ops:journal' %}" class="dash-pill-link" target="_blank" rel="noreferrer">Journal API</a>
-        </div>
-
-        <div class="dash-action-row">
-          <a href="{% url 'api_ops:runs' %}?status=success" class="dash-pill-link" target="_blank" rel="noreferrer">Runs: status=success</a>
-          <a href="{% url 'api_ops:runs' %}?source=yfinance" class="dash-pill-link" target="_blank" rel="noreferrer">Runs: source=yfinance</a>
-          <a href="{% url 'api_ops:snapshots' %}?symbol=BTC-USD" class="dash-pill-link" target="_blank" rel="noreferrer">Snapshots: symbol=BTC-USD</a>
-          <a href="{% url 'api_ops:bars' %}?source=yfinance" class="dash-pill-link" target="_blank" rel="noreferrer">Bars: source=yfinance</a>
-          <a href="{% url 'api_ops:bars' %}?symbol=BTC-USD" class="dash-pill-link" target="_blank" rel="noreferrer">Bars: symbol=BTC-USD</a>
-          <a href="{% url 'api_ops:bars' %}?timeframe=1h" class="dash-pill-link" target="_blank" rel="noreferrer">Bars: timeframe=1h</a>
-          <a href="{% url 'api_ops:journal' %}?source_file=trading-journal.csv" class="dash-pill-link" target="_blank" rel="noreferrer">Journal: trading-journal.csv</a>
-        </div>
+      <div class="home-hero-meta-item">
+        <span class="home-hero-meta-label">Snapshot signal</span>
+        <strong class="home-hero-meta-value">
+          {% if latest_snapshot %}
+            {{ latest_snapshot.crossover_signal|default:"—" }}
+          {% else %}
+            —
+          {% endif %}
+        </strong>
       </div>
-
-      <div class="dash-action-group">
-        <h3 class="dash-action-group-title">Portfolio & Source Previews</h3>
-        <p class="dash-action-group-subtitle">
-          Public portfolio presentation plus controlled secondary proof pages for multi-provider connectivity,
-          market-data inspection, and trading analytics context.
-        </p>
-
-        <div class="dash-action-row">
-          <a href="{% url 'public_landing' %}" class="dash-pill-link is-primary">Portfolio Landing</a>
-          <a href="{% url 'demo:btc_yfinance_page' %}" class="dash-pill-link">BTC yfinance Table</a>
-          <a href="{% url 'demo:btc_yfinance' %}" class="dash-pill-link" target="_blank" rel="noreferrer">BTC yfinance JSON</a>
-          <a href="{% url 'demo:btc_yfinance_info' %}" class="dash-pill-link">BTC Market Info</a>
-          <a href="{% url 'demo:btc_ccxt_page' %}" class="dash-pill-link">BTC ccxt Table</a>
-          <a href="{% url 'demo:btc_ccxt' %}" class="dash-pill-link" target="_blank" rel="noreferrer">BTC ccxt JSON</a>
-          <a href="{% url 'demo:eurusd_twelvedata_page' %}" class="dash-pill-link">EUR/USD TwelveData</a>
-          <a href="{% url 'demo:eurusd_twelvedata_json' %}" class="dash-pill-link" target="_blank" rel="noreferrer">EUR/USD JSON</a>
-          <a href="{% url 'demo:btc_yfinance_compare' %}" class="dash-pill-link is-accent">Trade Comparison</a>
-          <a href="{% url 'demo:btc_yfinance_plot' %}" class="dash-pill-link">BTC Chart</a>
-        </div>
+      <div class="home-hero-meta-item">
+        <span class="home-hero-meta-label">Access model</span>
+        <strong class="home-hero-meta-value">Ops / APIs / Portfolio</strong>
       </div>
     </div>
-  </section>
 
-  <section class="dash-layout-grid">
-    <article class="dash-panel">
-      <div class="dash-panel-header">
-        <div>
-          <p class="dash-panel-kicker">Recent Activity</p>
-          <h2 class="dash-panel-title">Latest Ingestion Runs</h2>
-          <p class="dash-panel-subtitle">Most recent ETL execution history across configured data sources.</p>
+    <div class="home-tag-row">
+      <span class="home-tag">Python &amp; Django</span>
+      <span class="home-tag">ETL Workflows</span>
+      <span class="home-tag">Reusable Metrics</span>
+      <span class="home-tag">Read-only APIs</span>
+      <span class="home-tag">Portfolio Proof</span>
+    </div>
+
+    <div class="home-cta-row">
+      <a href="{% url 'ops:dashboard' %}" class="home-btn home-btn-primary">Open Ops Dashboard</a>
+      <a href="{% url 'api_ops:reference' %}" class="home-btn home-btn-secondary">API Reference</a>
+    </div>
+  </div>
+
+  <aside class="home-hero-side">
+    <article class="home-side-card home-side-card--primary">
+      <p class="home-side-kicker">Platform Pulse</p>
+
+      <div class="home-side-stat-grid">
+        <div class="home-side-stat">
+          <span class="home-side-stat-label">Runs</span>
+          <strong class="home-side-stat-value">{{ total_runs }}</strong>
         </div>
-
-        <div class="dash-chip">
-          Showing
-          <strong>{{ recent_runs|length }}</strong>
+        <div class="home-side-stat">
+          <span class="home-side-stat-label">Bars</span>
+          <strong class="home-side-stat-value">{{ total_bars }}</strong>
         </div>
-      </div>
-
-      <div class="dash-table-card">
-        <div class="dash-table-scroll">
-          <table class="dash-data-table">
-            <thead>
-              <tr>
-                <th>Source</th>
-                <th>Symbol</th>
-                <th>Timeframe</th>
-                <th>Status</th>
-                <th>Inserted</th>
-                <th>Updated</th>
-                <th>Started</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for run in recent_runs %}
-              <tr>
-                <td>{{ run.source }}</td>
-                <td>{{ run.symbol }}</td>
-                <td>{{ run.timeframe|default:"—" }}</td>
-                <td>
-                  <span class="dash-status dash-status-{{ run.status }}">
-                    {{ run.status }}
-                  </span>
-                </td>
-                <td>{{ run.rows_inserted }}</td>
-                <td>{{ run.rows_updated }}</td>
-                <td>{{ run.started_at|date:"Y-m-d H:i" }}</td>
-              </tr>
-              {% empty %}
-              <tr class="dash-empty-row">
-                <td colspan="7">
-                  <span class="dash-empty-title">No ingestion runs available</span>
-                  <span class="dash-empty-copy">Run the ETL commands to populate operational data for review.</span>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+        <div class="home-side-stat">
+          <span class="home-side-stat-label">Snapshots</span>
+          <strong class="home-side-stat-value">{{ total_snapshots }}</strong>
+        </div>
+        <div class="home-side-stat">
+          <span class="home-side-stat-label">Journal</span>
+          <strong class="home-side-stat-value">{{ total_journal_entries }}</strong>
         </div>
       </div>
     </article>
 
-    <article class="dash-panel">
-      <div class="dash-panel-header">
+    <article class="home-side-card">
+      <p class="home-side-label">Latest successful run</p>
+      <p class="home-side-value">
+        {% if latest_successful_run %}
+          {{ latest_successful_run.source }} / {{ latest_successful_run.symbol }} / {{ latest_successful_run.timeframe|default:"—" }}
+        {% else %}
+          No successful run recorded yet
+        {% endif %}
+      </p>
+      <p class="home-side-subtext">
+        {% if latest_successful_run %}
+          Completed {{ latest_successful_run.finished_at|date:"Y-m-d H:i" }}
+        {% else %}
+          Run ingestion commands to populate the platform.
+        {% endif %}
+      </p>
+    </article>
+
+    <article class="home-side-card">
+      <p class="home-side-label">Latest snapshot signal</p>
+      <p class="home-side-value">
+        {% if latest_snapshot %}
+          {{ latest_snapshot.crossover_signal|default:"—" }}
+        {% else %}
+          No snapshot available
+        {% endif %}
+      </p>
+      <p class="home-side-subtext">
+        {% if latest_snapshot %}
+          {{ latest_snapshot.symbol }} / {{ latest_snapshot.timeframe }} / {{ latest_snapshot.snapshot_time|date:"Y-m-d H:i" }}
+        {% else %}
+          Compute metrics after ingestion to generate analytical state.
+        {% endif %}
+      </p>
+    </article>
+  </aside>
+</section>
+
+  <section class="home-metric-grid">
+  <article class="home-metric-card">
+    <p class="home-metric-kicker">Execution Layer</p>
+    <h3 class="home-metric-value">{{ total_runs }}</h3>
+    <p class="home-metric-label">Ingestion Runs</p>
+    <p class="home-metric-copy">Tracked ETL executions across configured providers and import sources.</p>
+    <p class="home-metric-meta">
+      {% if latest_run %}
+        Latest at {{ latest_run.started_at|date:"H:i" }}
+      {% else %}
+        Awaiting first run
+      {% endif %}
+    </p>
+  </article>
+
+  <article class="home-metric-card">
+    <p class="home-metric-kicker">Normalized Data</p>
+    <h3 class="home-metric-value">{{ total_bars }}</h3>
+    <p class="home-metric-label">Stored Market Bars</p>
+    <p class="home-metric-copy">Normalized OHLCV records available for downstream analytics and inspection.</p>
+    <p class="home-metric-meta">Structured for dashboard and API consumption.</p>
+  </article>
+
+  <article class="home-metric-card">
+    <p class="home-metric-kicker">Analytics Layer</p>
+    <h3 class="home-metric-value">{{ total_snapshots }}</h3>
+    <p class="home-metric-label">Metric Snapshots</p>
+    <p class="home-metric-copy">Reusable computed outputs for dashboard views and API delivery.</p>
+    <p class="home-metric-meta">
+      {% if latest_snapshot %}
+        Latest signal: {{ latest_snapshot.crossover_signal|default:"—" }}
+      {% else %}
+        No current snapshot
+      {% endif %}
+    </p>
+  </article>
+
+  <article class="home-metric-card">
+    <p class="home-metric-kicker">Trading Context</p>
+    <h3 class="home-metric-value">{{ total_journal_entries }}</h3>
+    <p class="home-metric-label">Journal Entries</p>
+    <p class="home-metric-copy">Imported journal records supporting portfolio and trading analytics context.</p>
+    <p class="home-metric-meta">Supports proof and analytics narrative.</p>
+  </article>
+</section>
+
+  <section class="home-surface-grid">
+    <article class="home-surface-card">
+      <div class="home-surface-head">
         <div>
-          <p class="dash-panel-kicker">Operational Summary</p>
-          <h2 class="dash-panel-title">Latest Platform State</h2>
-          <p class="dash-panel-subtitle">Quick visibility into the latest run, latest successful run, and most recent metric snapshot.</p>
+          <p class="home-section-kicker">Workspace Surface</p>
+          <h3 class="home-surface-title">Operations &amp; Monitoring</h3>
+          <p class="home-surface-copy">
+            Internal operational layer for reviewing ingestion activity, stored bars, and analytical snapshots.
+          </p>
         </div>
+        <a href="{% url 'ops:dashboard' %}" class="home-btn home-btn-primary home-btn-sm">Open</a>
       </div>
 
-      <div class="dash-keyvalue">
-        <div class="dash-kv-row">
-          <span class="dash-kv-label">Latest Run</span>
-          <span class="dash-kv-value">
-            {% if latest_run %}
-              {{ latest_run.source }} / {{ latest_run.symbol }} / {{ latest_run.timeframe|default:"—" }}
-            {% else %}
-              —
-            {% endif %}
-          </span>
-        </div>
+      <div class="home-link-grid">
+        <a href="{% url 'ops:dashboard' %}" class="home-link-card">
+          <span class="home-link-title">Ops Dashboard</span>
+          <span class="home-link-meta">control view</span>
+        </a>
+        <a href="{% url 'ops:ingestion_runs' %}" class="home-link-card">
+          <span class="home-link-title">Ingestion Runs</span>
+          <span class="home-link-meta">pipeline activity</span>
+        </a>
+        <a href="{% url 'ops:metric_snapshots' %}" class="home-link-card">
+          <span class="home-link-title">Metric Snapshots</span>
+          <span class="home-link-meta">computed outputs</span>
+        </a>
+        <a href="{% url 'ops:market_bars' %}" class="home-link-card">
+          <span class="home-link-title">Market Bars</span>
+          <span class="home-link-meta">normalized OHLCV</span>
+        </a>
+      </div>
 
-        <div class="dash-kv-row">
-          <span class="dash-kv-label">Latest Run Status</span>
-          <span class="dash-kv-value">
-            {% if latest_run %}
-              <span class="dash-status dash-status-{{ latest_run.status }}">{{ latest_run.status }}</span>
-            {% else %}
-              —
-            {% endif %}
-          </span>
-        </div>
+      {% if STREAMLIT_URL %}
+      <div class="home-inline-actions">
+        <a href="{{ STREAMLIT_URL }}" target="_blank" rel="noreferrer" class="home-btn home-btn-secondary home-btn-sm">Open Streamlit Dashboard</a>
+      </div>
+      {% endif %}
+    </article>
 
-        <div class="dash-kv-row">
-          <span class="dash-kv-label">Latest Run Started</span>
-          <span class="dash-kv-value">
-            {% if latest_run %}
-              {{ latest_run.started_at|date:"Y-m-d H:i" }}
-            {% else %}
-              —
-            {% endif %}
-          </span>
+    <article class="home-surface-card">
+      <div class="home-surface-head">
+        <div>
+          <p class="home-section-kicker">Integration Surface</p>
+          <h3 class="home-surface-title">API Access</h3>
+          <p class="home-surface-copy">
+            Read-only endpoints for integration-style review, recruiter-facing evidence, and filterable inspection.
+          </p>
         </div>
+        <a href="{% url 'api_ops:reference' %}" class="home-btn home-btn-primary home-btn-sm">Docs</a>
+      </div>
 
-        <div class="dash-kv-row">
-          <span class="dash-kv-label">Last Successful Run</span>
-          <span class="dash-kv-value">
-            {% if latest_successful_run %}
-              {{ latest_successful_run.source }} / {{ latest_successful_run.symbol }} / {{ latest_successful_run.timeframe|default:"—" }}
-            {% else %}
-              —
-            {% endif %}
-          </span>
-        </div>
+      <div class="home-link-grid">
+        <a href="{% url 'api_ops:reference' %}" class="home-link-card">
+          <span class="home-link-title">API Reference</span>
+          <span class="home-link-meta">documentation</span>
+        </a>
+        <a href="{% url 'api_ops:runs' %}" target="_blank" rel="noreferrer" class="home-link-card">
+          <span class="home-link-title">Runs API</span>
+          <span class="home-link-meta">json endpoint</span>
+        </a>
+        <a href="{% url 'api_ops:snapshots' %}" target="_blank" rel="noreferrer" class="home-link-card">
+          <span class="home-link-title">Snapshots API</span>
+          <span class="home-link-meta">json endpoint</span>
+        </a>
+        <a href="{% url 'api_ops:bars' %}" target="_blank" rel="noreferrer" class="home-link-card">
+          <span class="home-link-title">Bars API</span>
+          <span class="home-link-meta">json endpoint</span>
+        </a>
+      </div>
 
-        <div class="dash-kv-row">
-          <span class="dash-kv-label">Latest Snapshot</span>
-          <span class="dash-kv-value">
-            {% if latest_snapshot %}
-              {{ latest_snapshot.symbol }} / {{ latest_snapshot.timeframe }} / {{ latest_snapshot.snapshot_time|date:"Y-m-d H:i" }}
-            {% else %}
-              —
-            {% endif %}
-          </span>
-        </div>
+      <div class="home-filter-row">
+        <a href="{% url 'api_ops:runs' %}?status=success" target="_blank" rel="noreferrer" class="home-filter-pill">Runs: success</a>
+        <a href="{% url 'api_ops:runs' %}?source=yfinance" target="_blank" rel="noreferrer" class="home-filter-pill">Runs: yfinance</a>
+        <a href="{% url 'api_ops:snapshots' %}?symbol=BTC-USD" target="_blank" rel="noreferrer" class="home-filter-pill">Snapshots: BTC-USD</a>
+        <a href="{% url 'api_ops:bars' %}?timeframe=1h" target="_blank" rel="noreferrer" class="home-filter-pill">Bars: 1h</a>
+        <a href="{% url 'api_ops:journal' %}?source_file=trading-journal.csv" target="_blank" rel="noreferrer" class="home-filter-pill">Journal: trading-journal.csv</a>
+      </div>
+    </article>
 
-        <div class="dash-kv-row">
-          <span class="dash-kv-label">Latest Snapshot Signal</span>
-          <span class="dash-kv-value">
-            {% if latest_snapshot %}
-              {{ latest_snapshot.crossover_signal|default:"—" }}
-            {% else %}
-              —
-            {% endif %}
-          </span>
+    <article class="home-surface-card">
+      <div class="home-surface-head">
+        <div>
+          <p class="home-section-kicker">Portfolio Surface</p>
+          <h3 class="home-surface-title">Portfolio &amp; Source Proof</h3>
+          <p class="home-surface-copy">
+            Public presentation plus selected preview pages demonstrating provider connectivity and market-data inspection.
+          </p>
         </div>
+        <a href="{% url 'public_landing' %}" class="home-btn home-btn-primary home-btn-sm">Launch</a>
+      </div>
+
+      <div class="home-link-grid">
+        <a href="{% url 'public_landing' %}" class="home-link-card">
+          <span class="home-link-title">Portfolio Landing</span>
+          <span class="home-link-meta">public surface</span>
+        </a>
+        <a href="{% url 'demo:btc_yfinance_page' %}" class="home-link-card">
+          <span class="home-link-title">BTC yfinance Table</span>
+          <span class="home-link-meta">preview</span>
+        </a>
+        <a href="{% url 'demo:btc_ccxt_page' %}" class="home-link-card">
+          <span class="home-link-title">BTC ccxt Table</span>
+          <span class="home-link-meta">preview</span>
+        </a>
+        <a href="{% url 'demo:eurusd_twelvedata_page' %}" class="home-link-card">
+          <span class="home-link-title">EUR/USD TwelveData</span>
+          <span class="home-link-meta">preview</span>
+        </a>
+      </div>
+
+      <div class="home-filter-row">
+        <a href="{% url 'demo:btc_yfinance' %}" target="_blank" rel="noreferrer" class="home-filter-pill">BTC yfinance JSON</a>
+        <a href="{% url 'demo:btc_ccxt' %}" target="_blank" rel="noreferrer" class="home-filter-pill">BTC ccxt JSON</a>
+        <a href="{% url 'demo:eurusd_twelvedata_json' %}" target="_blank" rel="noreferrer" class="home-filter-pill">EUR/USD JSON</a>
+        <a href="{% url 'demo:btc_yfinance_compare' %}" class="home-filter-pill home-filter-pill--dark">Trade Comparison</a>
+        <a href="{% url 'demo:btc_yfinance_plot' %}" class="home-filter-pill">BTC Chart</a>
       </div>
     </article>
   </section>
+
+  <section class="home-detail-grid">
+    <article class="home-panel">
+      <div class="home-panel-head">
+        <div>
+          <p class="home-section-kicker">Recent Activity</p>
+          <h3 class="home-panel-title">Latest Ingestion Runs</h3>
+          <p class="home-panel-copy">Most recent ETL execution history across configured providers and import flows.</p>
+        </div>
+        <div class="home-count-pill">Showing {{ recent_runs|length }}</div>
+      </div>
+
+      <div class="home-table-wrap">
+        <table class="dash-data-table">
+          <thead>
+            <tr>
+              <th>Source</th>
+              <th>Symbol</th>
+              <th>Timeframe</th>
+              <th>Status</th>
+              <th>Inserted</th>
+              <th>Updated</th>
+              <th>Started</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for run in recent_runs %}
+            <tr>
+              <td>{{ run.source }}</td>
+              <td>{{ run.symbol }}</td>
+              <td>{{ run.timeframe|default:"—" }}</td>
+              <td>
+                <span class="dash-status dash-status-{{ run.status }}">
+                  {{ run.status }}
+                </span>
+              </td>
+              <td>{{ run.rows_inserted }}</td>
+              <td>{{ run.rows_updated }}</td>
+              <td>{{ run.started_at|date:"Y-m-d H:i" }}</td>
+            </tr>
+            {% empty %}
+            <tr class="dash-empty-row">
+              <td colspan="7">
+                <span class="dash-empty-title">No ingestion runs available</span>
+                <span class="dash-empty-copy">Run the ETL commands to populate operational data for review.</span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <aside class="home-rail">
+      <article class="home-panel">
+        <div class="home-panel-head home-panel-head--compact">
+          <div>
+            <p class="home-section-kicker">Operational Summary</p>
+            <h3 class="home-panel-title">Latest Platform State</h3>
+          </div>
+        </div>
+
+        <div class="dash-keyvalue">
+          <div class="dash-kv-row">
+            <span class="dash-kv-label">Latest Run</span>
+            <span class="dash-kv-value">
+              {% if latest_run %}
+                {{ latest_run.source }} / {{ latest_run.symbol }} / {{ latest_run.timeframe|default:"—" }}
+              {% else %}
+                —
+              {% endif %}
+            </span>
+          </div>
+
+          <div class="dash-kv-row">
+            <span class="dash-kv-label">Latest Run Status</span>
+            <span class="dash-kv-value">
+              {% if latest_run %}
+                <span class="dash-status dash-status-{{ latest_run.status }}">{{ latest_run.status }}</span>
+              {% else %}
+                —
+              {% endif %}
+            </span>
+          </div>
+
+          <div class="dash-kv-row">
+            <span class="dash-kv-label">Latest Run Started</span>
+            <span class="dash-kv-value">
+              {% if latest_run %}
+                {{ latest_run.started_at|date:"Y-m-d H:i" }}
+              {% else %}
+                —
+              {% endif %}
+            </span>
+          </div>
+
+          <div class="dash-kv-row">
+            <span class="dash-kv-label">Last Successful Run</span>
+            <span class="dash-kv-value">
+              {% if latest_successful_run %}
+                {{ latest_successful_run.source }} / {{ latest_successful_run.symbol }} / {{ latest_successful_run.timeframe|default:"—" }}
+              {% else %}
+                —
+              {% endif %}
+            </span>
+          </div>
+
+          <div class="dash-kv-row">
+            <span class="dash-kv-label">Latest Snapshot</span>
+            <span class="dash-kv-value">
+              {% if latest_snapshot %}
+                {{ latest_snapshot.symbol }} / {{ latest_snapshot.timeframe }} / {{ latest_snapshot.snapshot_time|date:"Y-m-d H:i" }}
+              {% else %}
+                —
+              {% endif %}
+            </span>
+          </div>
+
+          <div class="dash-kv-row">
+            <span class="dash-kv-label">Snapshot Signal</span>
+            <span class="dash-kv-value">
+              {% if latest_snapshot %}
+                {{ latest_snapshot.crossover_signal|default:"—" }}
+              {% else %}
+                —
+              {% endif %}
+            </span>
+          </div>
+        </div>
+      </article>
+
+      <article class="home-panel">
+        <div class="home-panel-head home-panel-head--compact">
+          <div>
+            <p class="home-section-kicker">Recommended Review</p>
+            <h3 class="home-panel-title">Fast Inspection Path</h3>
+          </div>
+        </div>
+
+        <div class="home-rail-actions">
+          <a href="{% url 'ops:ingestion_runs' %}" class="home-rail-link">Check ingestion history</a>
+          <a href="{% url 'api_ops:reference' %}" class="home-rail-link">Review API documentation</a>
+          <a href="{% url 'public_landing' %}" class="home-rail-link">Open portfolio landing</a>
+          <a href="{% url 'demo:btc_yfinance_compare' %}" class="home-rail-link">Inspect trade comparison</a>
+        </div>
+      </article>
+    </aside>
+  </section>
+
 </div>
-{% endblock %}
+{% endblock %} whether add or any changes further for now ?

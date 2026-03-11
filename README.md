@@ -1,110 +1,121 @@
 # DataBridge Market API
 
-> A production-minded Django data product for multi-source market data ingestion, normalized analytics storage, ETL workflow management, and read-only API delivery — built as a portfolio project for Analytics Engineer and Data Engineer roles.
+> A Django data product for multi-source market data ingestion, normalized storage, ETL workflow management, operational visibility, and read-only API delivery — built for Analytics Engineer, Data Engineer, FinTech Analytics, and BI/Reporting roles.
+
+**Source ingestion → Normalized storage → Metric computation → Operational visibility → API delivery → Analytics consumption**
+
+---
+
+## For Hiring Managers
+
+This project demonstrates the **upstream engineering side** of analytics work — not just charts and dashboards, but the full pipeline that makes them possible.
+
+**Analytics Engineer / BI Engineer**
+— Normalized relational model designed for downstream reporting. Reusable metric snapshot computation (returns, volatility, SMA, crossover signals). Read-only API endpoints with filtering and human-readable reference docs. Analyst-facing Streamlit output surface.
+
+**Data Engineer / Junior Integration Engineer**
+— Three live provider integrations (yfinance, ccxt, TwelveData). Repeatable ETL workflows via Django management commands. Full run observability: status, timestamps, row counts, and execution context logged per run.
+
+**The interview story in one sentence:**
+> *"External market data from multiple providers flows through ingestion commands into a normalized store, metric snapshots are computed on demand, and everything is queryable via a read-only API with an ops monitoring UI."*
 
 ---
 
 ## Screenshots
 
-| Homepage Dashboard | Operations Dashboard |
+### Public Landing Page
+![Public Landing Hero](docs/screenshots/00.1_public_landing_hero.png)
+
+### Core Product Surfaces
+
+| Executive Dashboard | Ingestion Runs |
 |---|---|
-| ![Homepage](docs/screenshots/01.1_home_dashboard.png) | ![Ops](docs/screenshots/02_ops_dashboard.png) |
+| ![Executive Dashboard](docs/screenshots/01.1_home_dashboard.png) | ![Ingestion Runs](docs/screenshots/03_ingestion_runs.png) |
 
 | API Reference | Streamlit Dashboard |
 |---|---|
-| ![API Reference](docs/screenshots/06.1_api_reference.png) | ![Streamlit](docs/screenshots/11.1_streamlit_dashboard.png) |
-
----
-
-## What this project demonstrates
-
-This is not a live-market demo app. It is a structured data product designed to show end-to-end workflow thinking across the full data engineering stack.
-
-```
-source ingestion → normalized storage → metric computation → operational visibility → API delivery → portfolio presentation
-```
-
-**Skills evidenced:**
-
-- Multi-source provider integration (yfinance, ccxt, TwelveData)
-- ETL workflow design with repeatable management commands
-- Normalized relational model design for downstream analytics
-- Metrics computation (returns, volatility, moving averages, crossover signals)
-- Read-only API delivery with filtering and human-readable reference docs
-- SaaS-style operational monitoring UI
-- Portfolio packaging for recruiter review
-
-**Target roles:** Analytics Engineer · Data Engineer (Junior / Integration) · FinTech Analytics · Reporting Engineer · Python / Django data-product roles
+| ![API Reference](docs/screenshots/06.1_api_reference.png) | ![Streamlit Dashboard](docs/screenshots/11.2_streamlit_dashboard.png) |
 
 ---
 
 ## Architecture
 
 ```
-Provider Clients       Service Layer          Normalized Models
-──────────────────     ──────────────────     ──────────────────────────────────
-yfinance               ingestion.py           IngestionRun
-ccxt               →   journal_import.py  →   MarketBar
-TwelveData             metrics.py             MetricSnapshot
-                                              TradeJournalEntry
-                                                      ↓
-                       ETL Commands           API + Ops UI
-                       ──────────────────     ──────────────────
-                       manage.py          →   /api/ops/  (JSON endpoints)
-                                              /ops/      (monitoring UI)
-                                              /demo/     (source previews)
-                                              /portfolio/ (landing page)
+Provider Clients        Service Layer             Normalized Models
+─────────────────       ──────────────────────    ──────────────────────
+yfinance                ingestion.py              IngestionRun
+ccxt              ──▶   journal_import.py   ──▶   MarketBar
+TwelveData              metrics.py                MetricSnapshot
+                                                  TradeJournalEntry
+                                                         ↓
+                        ETL Commands              Delivery Layer
+                        ──────────────────────    ──────────────────────
+                        ingest_market_data         /api/ops/   JSON endpoints
+                        import_trade_journal  ──▶  /ops/       monitoring UI
+                        compute_metrics            /portfolio/ public landing
+                                                   /           exec dashboard
+                                                   streamlit   analytics output
 ```
 
 ---
 
-## Product surfaces
+## How to Review This Project
 
-| Route | Surface | Purpose |
-|---|---|---|
-| `/` | Executive dashboard | KPI summary, latest run state, platform navigation |
-| `/portfolio/` | Public landing page | Recruiter-facing portfolio presentation |
-| `/ops/` | Operations UI | Internal ETL run history, snapshots, bars, platform state |
-| `/api/ops/` | Read-only API | JSON endpoints with filtering and detail routes |
-| `/demo/` | Source previews | Controlled proof pages for provider connectivity |
+**1. Public landing page** — `/portfolio/`
+Recruiter-facing overview of capabilities, architecture, data models, API layer, and stack.
 
----
+**2. Executive dashboard** — `/`
+KPI-style operational summary, latest run state, and platform navigation.
 
-## Core models
+**3. ETL execution history** — `/ops/runs/`
+Ingestion run history with status, timestamps, and row-level execution tracking.
 
-### `IngestionRun`
-Tracks ETL execution metadata — source, symbol, timeframe, status, row counts, and timestamps.
+**4. API layer** — `/api/ops/reference/`
+Human-readable documentation for all read-only JSON endpoints.
 
-### `MarketBar`
-Stores normalized OHLCV records linked to an ingestion run for downstream analytics use.
-
-### `MetricSnapshot`
-Stores computed analytics outputs: returns (1d, 7d), volatility (14d), SMA fast/slow, and crossover signal.
-
-### `TradeJournalEntry`
-Stores imported trade journal data used for portfolio analytics context and comparison views.
-
----
-
-## ETL commands
-
-**Ingest market data**
+**5. Analyst-facing output** — `streamlit_app.py`
 ```bash
+python -m streamlit run streamlit_app.py
+```
+
+**6. ETL commands directly**
+```bash
+python manage.py ingest_market_data --source yfinance --symbol BTC-USD --timeframe 1h --limit 50 --period 7d
+python manage.py import_trade_journal market_ingestion/static/trading-journal.csv
+python manage.py compute_metrics --symbol BTC-USD --timeframe 1h --source yfinance --run-id <RUN_ID>
+```
+
+**7. Proof artifacts** — `docs/STATUS.md`, `docs/PROOF_INDEX.md`, `docs/screenshots/`
+
+---
+
+## Core Models
+
+**`IngestionRun`** — ETL execution metadata: source, symbol, timeframe, status, row counts, timestamps, and execution context.
+
+**`MarketBar`** — Normalized OHLCV records linked to an ingestion run for downstream analytics and operational inspection.
+
+**`MetricSnapshot`** — Computed analytics outputs: return windows, volatility, SMA fast/slow values, and crossover signals.
+
+**`TradeJournalEntry`** — Imported journal data for portfolio analytics context, inspection views, and comparison workflows.
+
+---
+
+## ETL Commands
+
+```bash
+# Ingest market data
 python manage.py ingest_market_data \
   --source yfinance \
   --symbol BTC-USD \
   --timeframe 1h \
   --limit 50 \
   --period 7d
-```
 
-**Import trade journal**
-```bash
+# Import trade journal
 python manage.py import_trade_journal market_ingestion/static/trading-journal.csv
-```
 
-**Compute metric snapshot**
-```bash
+# Compute metric snapshot
 python manage.py compute_metrics \
   --symbol BTC-USD \
   --timeframe 1h \
@@ -114,29 +125,82 @@ python manage.py compute_metrics \
 
 ---
 
-## API endpoints
+## API Endpoints
 
 All endpoints are read-only and support query parameter filtering.
 
 | Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/api/ops/reference/` | Human-readable API documentation |
-| `GET` | `/api/ops/runs/` | Ingestion run list — filter by `source`, `status`, `symbol` |
-| `GET` | `/api/ops/runs/<id>/` | Ingestion run detail |
-| `GET` | `/api/ops/snapshots/` | Metric snapshot list — filter by `symbol`, `timeframe` |
-| `GET` | `/api/ops/bars/` | Market bar OHLCV records — filter by `symbol`, `timeframe` |
-| `GET` | `/api/ops/journal/` | Trade journal entries — filter by `source_file` |
+|--------|----------|-------------|
+| GET | `/api/ops/reference/` | Human-readable API documentation |
+| GET | `/api/ops/runs/` | Ingestion run list — filter by source, status, symbol |
+| GET | `/api/ops/runs/<id>/` | Ingestion run detail |
+| GET | `/api/ops/snapshots/` | Metric snapshot list — filter by symbol, timeframe |
+| GET | `/api/ops/bars/` | Market bar OHLCV records — filter by symbol, timeframe |
+| GET | `/api/ops/journal/` | Trade journal entries — filter by source_file |
 
 ---
 
-## Project structure
+## Product Surfaces
+
+| Route | Surface | Purpose |
+|-------|---------|---------|
+| `/` | Executive dashboard | KPI summary, latest run state, navigation |
+| `/portfolio/` | Public landing page | Recruiter-facing project overview |
+| `/ops/` | Operations UI | ETL run history, snapshots, bars, platform state |
+| `/api/ops/` | Read-only API | JSON endpoints with filtering and detail routes |
+| `/demo/` | Source previews | Controlled provider proof routes |
+| `streamlit_app.py` | Analytics surface | Analyst-facing chart and market-view output |
+
+---
+
+## Local Setup
+
+```bash
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Configure environment
+cp .env.example .env
+# Fill in: DJANGO_SETTINGS_MODULE, TWELVEDATA_API_KEY, STREAMLIT_URL, CCXT_EXCHANGE
+
+# 3. Run Django
+python manage.py migrate
+python manage.py runserver
+
+# 4. Run Streamlit (optional)
+python -m streamlit run streamlit_app.py
+
+# 5. Verify
+python manage.py check
+python manage.py test
+```
+
+> TwelveData preview pages require a valid `TWELVEDATA_API_KEY` in `.env`. Real secrets must never be committed.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Backend | Python / Django |
+| Market data | yfinance |
+| Crypto data | ccxt |
+| Financial API | TwelveData |
+| Analytics UI | Streamlit |
+| Database | SQLite (dev) / PostgreSQL (production target) |
+| Testing | Django TestCase |
+
+---
+
+## Project Structure
 
 ```
 databridge-market-api/
-├── README.md
 ├── manage.py
 ├── requirements.txt
 ├── .env.example
+├── streamlit_app.py
 ├── databridge/
 │   ├── urls.py
 │   └── settings/
@@ -156,86 +220,12 @@ databridge-market-api/
 │   │   ├── ingest_market_data.py
 │   │   ├── import_trade_journal.py
 │   │   └── compute_metrics.py
-│   ├── templates/
-│   ├── static/market_ingestion/css/
-│   │   ├── tokens.css
-│   │   ├── app.css
-│   │   └── public_landing.css
 │   ├── models.py
 │   ├── views.py
 │   ├── api_views.py
-│   ├── api_urls.py
-│   ├── operational_views.py
-│   ├── operational_urls.py
-│   └── demo_urls.py
-├── streamlit_app.py
+│   └── api_urls.py
 └── docs/
     ├── STATUS.md
     ├── PROOF_INDEX.md
     └── screenshots/
 ```
-
----
-
-## Local setup
-
-**1. Install dependencies**
-```bash
-pip install -r requirements.txt
-```
-
-**2. Configure environment**
-
-Copy `.env.example` to `.env` and fill in your values:
-
-```env
-DJANGO_SETTINGS_MODULE=databridge.settings.dev
-DEBUG=True
-TWELVEDATA_API_KEY=your_key_here
-STREAMLIT_URL=http://127.0.0.1:8501
-CCXT_EXCHANGE=binance
-```
-
-**3. Run Django**
-```bash
-python manage.py migrate
-python manage.py runserver
-```
-
-**4. Run Streamlit (optional)**
-```bash
-python -m streamlit run streamlit_app.py
-```
-
-**5. Verify**
-```bash
-python manage.py check
-python manage.py test
-```
-
----
-
-## Notes
-
-- The TwelveData preview pages require a valid `TWELVEDATA_API_KEY` in your `.env`.
-- Real secrets must stay in `.env` and should never be committed to the repository.
-- The `/demo/` routes exist as controlled proof pages — the main application is intentionally product-first, not demo-first.
-- Proof artifacts and screenshots are available under `docs/`.
-
----
-
-## Stack
-
-| Layer | Technology |
-|---|---|
-| Backend | Django / Python |
-| Market data | yfinance |
-| Crypto data | ccxt |
-| Financial API | TwelveData |
-| Analytics UI | Streamlit |
-| Database | SQLite (dev) / PostgreSQL (prod) |
-| Testing | Django TestCase |
-
----
-
-*Portfolio project — Analytics & Data Engineering*

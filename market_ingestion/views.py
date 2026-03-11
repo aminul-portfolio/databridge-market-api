@@ -4,6 +4,8 @@ from io import BytesIO
 
 import ccxt
 import ccxt.async_support as ccxt_async
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 import requests
@@ -13,7 +15,6 @@ from django.http import JsonResponse
 from django.shortcuts import render
 
 from .models import IngestionRun, MarketBar, MetricSnapshot, TradeJournalEntry
-
 
 def _to_pretty_json(data):
     return json.dumps(data, indent=2, default=str)
@@ -332,26 +333,37 @@ def btc_yfinance_compare(request):
         },
     )
 
-
 def btc_yfinance_plot(request):
     try:
         hist = yf.Ticker("BTC-USD").history(period="7d", interval="1h")
 
-        plt.figure(figsize=(10, 5))
-        plt.plot(hist.index, hist["Close"], marker="o", linestyle="-")
-        plt.title("BTC/USD Closing Prices")
-        plt.xlabel("Date")
-        plt.ylabel("Price (USD)")
-        plt.xticks(rotation=45)
-        plt.grid(True)
-        plt.tight_layout()
+        if hist.empty:
+            return render(
+                request,
+                "info_view.html",
+                {
+                    "title": "BTC/USD Chart",
+                    "info": {"error": "No BTC/USD data was returned for the selected period."},
+                },
+            )
+
+        fig, ax = plt.subplots(figsize=(10, 5))
+        ax.plot(hist.index, hist["Close"], linestyle="-", linewidth=2)
+        ax.set_title("BTC/USD Closing Prices")
+        ax.set_xlabel("Date")
+        ax.set_ylabel("Price (USD)")
+        ax.tick_params(axis="x", rotation=45)
+        ax.grid(True, alpha=0.3)
+        fig.tight_layout()
 
         buf = BytesIO()
-        plt.savefig(buf, format="png")
-        plt.close()
+        fig.savefig(buf, format="png", dpi=120)
+        plt.close(fig)
+
         buf.seek(0)
         image_base64 = base64.b64encode(buf.read()).decode("utf-8")
         buf.close()
+
     except Exception as exc:
         return render(
             request,
