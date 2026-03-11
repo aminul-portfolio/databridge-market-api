@@ -36,6 +36,11 @@ This project demonstrates the **upstream engineering side** of analytics work â€
 |---|---|
 | ![API Reference](docs/screenshots/06.1_api_reference.png) | ![Streamlit Dashboard](docs/screenshots/11.2_streamlit_dashboard.png) |
 
+### Additional Dashboard Proof
+
+For a full-page view of the executive dashboard, see:
+[Full executive dashboard screenshot](docs/screenshots/01.0_home_dashboard_full.png)
+
 ---
 
 ## Architecture
