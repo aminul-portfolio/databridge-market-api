@@ -1,11 +1,11 @@
 # DataBridge Market API
 
-<<<<<<< HEAD
+
 > A Django data product for multi-source market data ingestion, normalized storage, ETL [Extract, Transform, Load] workflows, operational visibility, and read-only API [Application Programming Interface] delivery — built to demonstrate Analytics Engineer, Data Engineer, FinTech, and BI [Business Intelligence] / reporting capability.
 
 **Source ingestion → Normalized storage → Metric computation → Operational visibility → API delivery → Analytics consumption**
 **Includes:** multi-source ingestion commands, normalised models, metric snapshots, operations UI, read-only JSON API, Streamlit output, and proof artefacts under `docs/`.
-=======
+
 > A Django data product for multi-source market data ingestion, normalized storage, ETL (Extract, Transform, Load) workflows, operational visibility, and read-only API delivery — built to demonstrate Analytics Engineer, Data Engineer, FinTech, and BI / reporting capability.
 
 **Source ingestion → Normalized storage → Metric computation → Operational visibility → API delivery → Analytics consumption**
