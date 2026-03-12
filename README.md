@@ -1,16 +1,12 @@
 # DataBridge Market API
 
-
-> A Django data product for multi-source market data ingestion, normalized storage, ETL [Extract, Transform, Load] workflows, operational visibility, and read-only API [Application Programming Interface] delivery — built to demonstrate Analytics Engineer, Data Engineer, FinTech, and BI [Business Intelligence] / reporting capability.
-
-**Source ingestion → Normalized storage → Metric computation → Operational visibility → API delivery → Analytics consumption**
-**Includes:** multi-source ingestion commands, normalised models, metric snapshots, operations UI, read-only JSON API, Streamlit output, and proof artefacts under `docs/`.
-
-> A Django data product for multi-source market data ingestion, normalized storage, ETL (Extract, Transform, Load) workflows, operational visibility, and read-only API delivery — built to demonstrate Analytics Engineer, Data Engineer, FinTech, and BI / reporting capability.
+> A Django data product for multi-source market data ingestion, normalized storage, ETL [Extract, Transform, Load] workflows, operational visibility, and read-only API delivery — built to demonstrate Analytics Engineer, Data Engineer, FinTech, and BI [Business Intelligence] / reporting-oriented capability.
 
 **Source ingestion → Normalized storage → Metric computation → Operational visibility → API delivery → Analytics consumption**
 
 **Includes:** multi-source ingestion commands, normalized models, metric snapshots, operations UI, read-only JSON API, Streamlit output, and proof artifacts under `docs/`.
+
+---
 
 ## For Hiring Managers
 
@@ -50,6 +46,7 @@ This project demonstrates the **upstream engineering side** of analytics work �
 ### Additional Dashboard Proof
 
 For a full-page view of the executive dashboard, see:
+
 [Full executive dashboard screenshot](docs/screenshots/01.0_home_dashboard_full.png)
 
 ---
@@ -171,14 +168,21 @@ All endpoints are read-only and support query parameter filtering.
 
 ## Local Setup
 
+### 1. Install dependencies
+
 ```bash
-# 1. Install dependencies
 pip install -r requirements.txt
+```
+### 2. Configure environment
 
-# 2. Configure environment
-# Copy `.env.example` to `.env` and fill in the required values:
-# DJANGO_SETTINGS_MODULE, TWELVEDATA_API_KEY, STREAMLIT_URL, CCXT_EXCHANGE
+Copy `.env.example` to `.env` and fill in:
 
+- `DJANGO_SETTINGS_MODULE`
+- `TWELVEDATA_API_KEY`
+- `STREAMLIT_URL`
+- `CCXT_EXCHANGE`
+
+```bash
 # 3. Run Django
 python manage.py migrate
 python manage.py runserver

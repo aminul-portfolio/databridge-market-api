@@ -1,4 +1,4 @@
-Django>=5.0,<6.0
+Django>=5.2,<5.3
 pandas>=2.2,<3.0
 requests>=2.31,<3.0
 matplotlib>=3.8,<4.0
